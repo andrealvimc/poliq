@@ -214,6 +214,26 @@ class ApiClient {
     return response.data;
   }
 
+  async testSource(sourceId: string): Promise<{ message: string; count: number; articles: unknown[] }> {
+    const response: AxiosResponse<{ message: string; count: number; articles: unknown[] }> = await this.client.post(`/providers/test/${sourceId}`);
+    return response.data;
+  }
+
+  async testRSSFeeds(category?: string): Promise<{ message: string; count: number; articles: unknown[] }> {
+    const response: AxiosResponse<{ message: string; count: number; articles: unknown[] }> = await this.client.post('/providers/test/rss', { category });
+    return response.data;
+  }
+
+  async testNewsAPI(category?: string): Promise<{ message: string; count: number; articles: unknown[] }> {
+    const response: AxiosResponse<{ message: string; count: number; articles: unknown[] }> = await this.client.post('/providers/test/newsapi', { category });
+    return response.data;
+  }
+
+  async testAllSources(): Promise<{ message: string; results: Record<string, any> }> {
+    const response: AxiosResponse<{ message: string; results: Record<string, any> }> = await this.client.post('/providers/test/all');
+    return response.data;
+  }
+
   // Publication endpoints
   async publishToSocial(newsId: string, platform: string): Promise<Publication> {
     const response: AxiosResponse<Publication> = await this.client.post(`/publication/publish/${newsId}/${platform}`);

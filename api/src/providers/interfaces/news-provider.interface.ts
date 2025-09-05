@@ -4,6 +4,7 @@ export interface NewsProviderResult {
   content?: string;
   url: string;
   source: string;
+  category?: string;
   publishedAt: Date;
   imageUrl?: string;
   author?: string;

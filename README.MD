@@ -19,7 +19,7 @@
 
 ## ✨ Features
 
-- 🔄 **Fetch Automático**: Busca notícias de fontes externas (GNews API)
+- 🔄 **Fetch Automático**: Busca notícias de múltiplas fontes (GNews, NewsAPI, RSS feeds)
 - 🤖 **Processamento IA**: Gera títulos, resumos e comentários otimizados
 - 🎨 **Geração de Mídia**: Cria imagens para Instagram no padrão InfoMoney
 - ⚡ **Processamento Assíncrono**: Sistema de filas com Bull Queue
@@ -53,7 +53,8 @@
 - **AI**: Ollama (Local) / OpenAI (Cloud)
 - **Image**: Node Canvas + Sharp
 - **Auth**: JWT + Passport
-- **API**: GNews, Meta Graph API
+- **APIs**: GNews, NewsAPI, Meta Graph API
+- **RSS**: G1, UOL, Estadão, Folha, InfoMoney, TecMundo
 
 ## 🚀 Quick Start
 
@@ -94,8 +95,9 @@ pnpm run start:dev    # Application
 # Database
 DATABASE_URL="postgresql://poliq:poliq123@localhost:5432/poliq"
 
-# APIs
-GNEWS_API_KEY="your-gnews-api-key"
+# News APIs (múltiplas fontes para melhor cobertura)
+GNEWS_API_KEY="your-gnews-api-key"  # Backup
+NEWS_API_KEY="your-newsapi-key"     # Principal (1000 req/dia grátis)
 OPENAI_API_KEY="your-openai-api-key"  # Optional
 
 # AI Provider (ollama or openai)
@@ -121,7 +123,7 @@ POST /api/v1/auth/login
 
 ### News Operations
 ```http
-# Fetch and process news
+# Fetch and process news (múltiplas fontes)
 POST /api/v1/providers/fetch-and-save
 Authorization: Bearer <token>
 
@@ -132,11 +134,34 @@ Authorization: Bearer <token>
 # Generate media
 POST /api/v1/media/generate
 Authorization: Bearer <token>
+
+# Test specific news sources
+GET /api/v1/providers/test-sources
+Authorization: Bearer <token>
 ```
+
+## 📰 Fontes de Notícias
+
+### **APIs Externas**
+- **GNews API**: Backup com limitações
+- **NewsAPI**: 1000 requests/dia grátis, cobertura global
+- **Reddit API**: Conteúdo em tempo real das comunidades brasileiras
+
+### **RSS Feeds (Principais Sites)**
+- **Política**: G1, UOL, Estadão, Folha
+- **Economia**: G1, UOL, Estadão, Folha, InfoMoney
+- **Tecnologia**: G1, UOL, Estadão, Folha, TecMundo
+
+### **Vantagens do Sistema Híbrido**
+- ✅ **Resiliente**: Se uma fonte falhar, outras continuam
+- ✅ **Sem Limitações**: RSS feeds são ilimitados
+- ✅ **Custo Zero**: RSS + Reddit são 100% gratuitos
+- ✅ **Cobertura Completa**: Múltiplas fontes confiáveis
+- ✅ **Filtros por Categoria**: Busca específica por tema
 
 ## 🔄 Workflow
 
-1. **News Fetching**: Sistema busca notícias da GNews API por categoria
+1. **News Fetching**: Sistema busca notícias de múltiplas fontes por categoria
 2. **AI Processing**: Ollama processa e otimiza títulos/resumos
 3. **Media Generation**: Gera imagens no padrão InfoMoney (1080x1080)
 4. **Queue Management**: Processa tudo de forma assíncrona
@@ -265,7 +290,8 @@ pnpm run start:dev
 2. **Configure as variáveis de ambiente**:
    ```env
    DATABASE_URL=postgresql://...
-   GNEWS_API_KEY=your-key
+   GNEWS_API_KEY=your-gnews-key      # Backup
+   NEWS_API_KEY=your-newsapi-key     # Principal (1000 req/dia grátis)
    AI_PROVIDER=openai
    OPENAI_API_KEY=sk-...
    REDIS_URL=redis://...
@@ -321,9 +347,12 @@ pm2 start npm --name "poliq-api" -- run start:prod
 # Database
 DATABASE_URL="postgresql://user:pass@host:5432/poliq"
 
-# APIs Externas
-GNEWS_API_KEY="your-gnews-key"
-OPENAI_API_KEY="sk-your-openai-key"  # ou configure Ollama
+# APIs Externas (múltiplas fontes)
+GNEWS_API_KEY="your-gnews-key"        # Backup
+NEWS_API_KEY="your-newsapi-key"       # Principal (1000 req/dia grátis)
+REDDIT_API_KEY=""                     # Opcional
+TWITTER_API_KEY=""                    # Opcional
+OPENAI_API_KEY="sk-your-openai-key"   # ou configure Ollama
 
 # Redis
 REDIS_URL="redis://localhost:6379"
@@ -359,9 +388,25 @@ curl https://api.poliq.com.br/api/v1/health
 # Queue status
 curl https://api.poliq.com.br/api/v1/queue/stats
 
+# Test news sources
+curl https://api.poliq.com.br/api/v1/providers/test-sources
+
 # Logs (com PM2)
 pm2 logs poliq-api
 pm2 monit
+```
+
+### 🔍 Testando Fontes de Notícias
+
+```bash
+# Testar RSS feeds
+curl "http://localhost:3000/api/v1/providers/test-rss?category=tecnologia"
+
+# Testar NewsAPI
+curl "http://localhost:3000/api/v1/providers/test-newsapi?category=economia"
+
+# Testar todas as fontes
+curl "http://localhost:3000/api/v1/providers/test-all-sources"
 ```
 
 ## 🤝 Contributing

@@ -45,6 +45,7 @@ export class NewsProcessor {
           aiSummary: result.summary,
           aiHeadline: result.headline,
           aiCommentary: result.commentary,
+          aiContent: result.content,
           aiProcessed: result.processed,
         },
       });

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class ContentProcessorService {
+  private readonly logger = new Logger(ContentProcessorService.name);
   
   async extractKeywords(text: string): Promise<string[]> {
     // Simple keyword extraction - you can enhance this with NLP libraries
@@ -42,32 +43,64 @@ export class ContentProcessorService {
   async cleanContent(content: string): Promise<string> {
     if (!content) return '';
     
-    // Remove HTML tags
-    let cleaned = content.replace(/<[^>]*>/g, '');
+    // Remove HTML tags but preserve paragraph structure
+    let cleaned = content
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n\n')
+      .replace(/<p[^>]*>/gi, '')
+      .replace(/<[^>]*>/g, '');
     
-    // Remove GNews sharing buttons at the beginning
+    // Decode HTML entities
+    cleaned = cleaned
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&apos;/g, "'");
+    
+    // Remove GNews sharing buttons and social media elements
     cleaned = cleaned.replace(/^(Share\s*\n?Tweet\s*\n?Share\s*\n?Share\s*\n?E-mail\s*\n?)/gi, '');
     cleaned = cleaned.replace(/^(Compartilhar\s*\n?Tweetar\s*\n?Compartilhar\s*\n?Compartilhar\s*\n?E-mail\s*\n?)/gi, '');
     
     // Remove individual sharing terms
-    cleaned = cleaned.replace(/\b(Share|Tweet|E-mail)\b/gi, '');
-    cleaned = cleaned.replace(/\b(Compartilhar|Tweetar|E-mail)\b/gi, '');
+    cleaned = cleaned.replace(/\b(Share|Tweet|E-mail|Compartilhar|Tweetar)\b/gi, '');
     
-    // Remove common GNews truncation patterns
+    // Remove common truncation patterns
     cleaned = cleaned.replace(/\.\.\.\s*\[\d+\s*chars\]/gi, '');
     cleaned = cleaned.replace(/\.\.\.\s*\[truncated\]/gi, '');
     cleaned = cleaned.replace(/\.\.\.\s*\[more\]/gi, '');
+    cleaned = cleaned.replace(/\.\.\.\s*\[leia mais\]/gi, '');
+    cleaned = cleaned.replace(/\.\.\.\s*\[read more\]/gi, '');
+    
+    // Remove app download prompts
+    cleaned = cleaned.replace(/📱Baixe o app do g1 para ver notícias em tempo real e de graça/gi, '');
+    cleaned = cleaned.replace(/📱Download the g1 app to see real-time news for free/gi, '');
+    cleaned = cleaned.replace(/Baixe o app do g1/gi, '');
+    cleaned = cleaned.replace(/Download the g1 app/gi, '');
+    
+    // Remove photo credits and captions that are not part of the main content
+    cleaned = cleaned.replace(/^[A-Z\s\/]+$/gm, ''); // Remove lines with only uppercase letters and slashes (photo credits)
+    cleaned = cleaned.replace(/^[A-Z][A-Z\s]+$/gm, ''); // Remove lines with only uppercase words (captions)
     
     // Remove multiple consecutive periods
     cleaned = cleaned.replace(/\.{3,}/g, '...');
     
-    // Normalize line breaks and whitespace
-    cleaned = cleaned.replace(/\n+/g, ' '); // Convert line breaks to spaces
-    cleaned = cleaned.replace(/\s+/g, ' '); // Normalize multiple spaces
-    cleaned = cleaned.trim();
+    // Clean up whitespace and line breaks
+    cleaned = cleaned
+      .replace(/\n\s*\n\s*\n/g, '\n\n') // Multiple line breaks to double
+      .replace(/[ \t]+/g, ' ') // Multiple spaces to single
+      .replace(/^\s+|\s+$/gm, '') // Trim each line
+      .trim();
     
-    // Remove any remaining sharing patterns
+    // Remove any remaining sharing patterns at the start
     cleaned = cleaned.replace(/^(Share|Tweet|E-mail|Compartilhar|Tweetar)\s*/gi, '');
+    
+    // If content is too short after cleaning, it might be just metadata
+    if (cleaned.length < 50) {
+      this.logger.warn(`Content too short after cleaning (${cleaned.length} chars): ${cleaned.substring(0, 30)}...`);
+    }
     
     return cleaned.trim();
   }

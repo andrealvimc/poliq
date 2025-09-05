@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { MarkdownRenderer } from '@/components/ui/MarkdownRenderer';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -161,22 +162,16 @@ export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
             )}
 
             {/* Content */}
-            <div className="prose prose-lg max-w-none">
-              <div className="text-gray-700 leading-relaxed">
-                {news.content
-                  .split('\n')
-                  .filter(paragraph => paragraph.trim() !== '')
-                  .map((paragraph, index) => (
-                    <p key={index} className="mb-4 text-justify">
-                      {paragraph.trim()}
-                    </p>
-                  ))}
-                
-                {/* AI Disclaimer and Content Warning */}
-                <div className="mt-6 space-y-4">
-                  {/* AI Disclaimer */}
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-start">
+            <MarkdownRenderer 
+              content={news.aiContent || news.content}
+              className="text-gray-700 leading-relaxed"
+            />
+            
+            {/* AI Disclaimer and Content Warning */}
+            <div className="mt-6 space-y-4">
+              {/* AI Disclaimer */}
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start">
                       <div className="flex-shrink-0">
                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                           <span className="text-blue-600 text-sm font-bold">AI</span>
@@ -184,10 +179,11 @@ export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
                       </div>
                       <div className="ml-3">
                         <h4 className="text-sm font-medium text-blue-800">
-                          Conteúdo Processado por IA
+                          Conteúdo Reescrito por IA
                         </h4>
                         <p className="text-sm text-blue-700 mt-1">
-                          Este conteúdo foi processado e otimizado por inteligência artificial. 
+                          Este conteúdo foi reescrito por inteligência artificial com perspectiva editorial de direita, 
+                          mantendo os fatos principais mas apresentando uma análise crítica e conservadora. 
                           Para informações completas e atualizadas, sempre consulte a fonte original.
                         </p>
                       </div>
@@ -228,8 +224,6 @@ export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
                       </div>
                     </div>
                   )}
-                </div>
-              </div>
             </div>
 
             {/* Actions */}

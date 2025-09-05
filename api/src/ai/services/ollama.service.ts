@@ -128,4 +128,61 @@ TAGS:`;
       return null;
     }
   }
+
+  async generateRewrittenContent(text: string, originalSource?: string): Promise<string | null> {
+    if (!this.config.baseUrl) {
+      this.logger.warn('Ollama base URL not configured');
+      return null;
+    }
+
+    try {
+      const prompt = `
+        Reescreva o seguinte conteúdo de notícia com uma perspectiva de direita, mantendo os fatos principais mas apresentando uma análise crítica e conservadora. 
+        O texto deve ser objetivo, mas com um viés editorial de direita que questiona narrativas progressistas e enfatiza valores tradicionais, liberdade individual e responsabilidade pessoal.
+        
+        Fonte original: ${originalSource || 'Desconhecida'}
+        
+        Conteúdo original:
+        ${text}
+        
+        Instruções:
+        - Mantenha os fatos principais da notícia
+        - Apresente uma perspectiva crítica e conservadora
+        - Questione narrativas progressistas quando apropriado
+        - Enfatize valores como liberdade individual, responsabilidade pessoal e tradição
+        - Use linguagem objetiva mas com tom editorial de direita
+        - Mantenha o mesmo tamanho aproximado do texto original
+        - Escreva em português brasileiro
+        - **IMPORTANTE**: Formate o texto em Markdown usando:
+          * **negrito** para ênfase em pontos importantes
+          * *itálico* para citações ou termos técnicos
+          * ## Subtítulos para organizar seções
+          * - Listas com bullets para pontos-chave
+          * > Citações em blockquotes quando apropriado
+          * Links [texto](url) quando relevante
+        
+        Conteúdo reescrito em Markdown:
+      `;
+
+      const response = await firstValueFrom(
+        this.httpService.post(`${this.config.baseUrl}/api/generate`, {
+          model: this.config.model,
+          prompt: prompt,
+          stream: false,
+          options: {
+            temperature: 0.7,
+            num_predict: 2000,
+          },
+        }, {
+          timeout: 30000,
+        })
+      );
+
+      return response.data?.response?.trim() || null;
+
+    } catch (error) {
+      this.logger.error('Failed to call Ollama API:', error.message);
+      return null;
+    }
+  }
 }

@@ -30,16 +30,18 @@ export class AiService {
     this.logger.log(`Processing news content: ${title}`);
 
     try {
-      const [summary, headline, commentary] = await Promise.all([
+      const [summary, headline, commentary, rewrittenContent] = await Promise.all([
         this.generateSummary(title, content),
         this.generateHeadline(title, content),
         this.generateCommentary(title, content, originalSource),
+        this.generateRewrittenContent(title, content, originalSource),
       ]);
 
       const result: NewsProcessingResult = {
         summary,
         headline,
         commentary,
+        content: rewrittenContent,
         processed: true,
         processedAt: new Date(),
       };
@@ -54,6 +56,7 @@ export class AiService {
         summary: null,
         headline: null,
         commentary: null,
+        content: null,
         processed: false,
         processedAt: new Date(),
         error: error.message,
@@ -124,5 +127,19 @@ export class AiService {
     // Combine and deduplicate
     const allTags = [...keywords, ...categories];
     return [...new Set(allTags)].slice(0, 10); // Limit to 10 tags
+  }
+
+  async generateRewrittenContent(title: string, content?: string, originalSource?: string): Promise<string | null> {
+    if (!content && !title) {
+      return null;
+    }
+
+    const text = content || title;
+    
+    if (this.aiProvider === 'ollama') {
+      return this.ollamaService.generateRewrittenContent(text, originalSource);
+    }
+    
+    return this.openaiService.generateRewrittenContent(text, originalSource);
   }
 }

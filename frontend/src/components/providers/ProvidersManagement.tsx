@@ -16,10 +16,55 @@ import {
   XCircle,
   Loader2,
   ExternalLink,
+  Globe,
+  Database,
+  MessageSquare,
+  Twitter,
+  Settings,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { ExternalSource } from '@/types';
+import { ExternalSource, SourceType } from '@/types';
 import { toast } from 'sonner';
+import { SourcesStats } from './SourcesStats';
+
+const getSourceIcon = (type: SourceType) => {
+  switch (type) {
+    case SourceType.RSS_FEED:
+      return <Rss className="h-5 w-5" />;
+    case SourceType.GNEWS_API:
+    case SourceType.NEWSAPI_ORG:
+      return <Globe className="h-5 w-5" />;
+    case SourceType.REDDIT_API:
+      return <MessageSquare className="h-5 w-5" />;
+    case SourceType.TWITTER_API:
+      return <Twitter className="h-5 w-5" />;
+    case SourceType.SOCIAL_MEDIA:
+      return <ExternalLink className="h-5 w-5" />;
+    default:
+      return <Settings className="h-5 w-5" />;
+  }
+};
+
+const getSourceTypeLabel = (type: SourceType) => {
+  switch (type) {
+    case SourceType.RSS_FEED:
+      return 'RSS Feed';
+    case SourceType.GNEWS_API:
+      return 'GNews API';
+    case SourceType.NEWSAPI_ORG:
+      return 'NewsAPI.org';
+    case SourceType.REDDIT_API:
+      return 'Reddit API';
+    case SourceType.TWITTER_API:
+      return 'Twitter API';
+    case SourceType.SOCIAL_MEDIA:
+      return 'Social Media';
+    case SourceType.WEB_SCRAPER:
+      return 'Web Scraper';
+    default:
+      return 'Unknown';
+  }
+};
 
 export const ProvidersManagement: React.FC = () => {
   const [sources, setSources] = useState<ExternalSource[]>([]);
@@ -92,6 +137,45 @@ export const ProvidersManagement: React.FC = () => {
     } catch (error) {
       console.error('Error reprocessing failed news:', error);
       toast.error('Erro ao reprocessar notícias');
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  const testSource = async (sourceId: string) => {
+    try {
+      setFetching(true);
+      const result = await apiClient.testSource(sourceId);
+      toast.success(`${result.count} notícias encontradas na fonte`);
+    } catch (error) {
+      console.error('Error testing source:', error);
+      toast.error('Erro ao testar fonte');
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  const testRSSFeeds = async (category?: string) => {
+    try {
+      setFetching(true);
+      const result = await apiClient.testRSSFeeds(category);
+      toast.success(`${result.count} notícias encontradas nos RSS feeds`);
+    } catch (error) {
+      console.error('Error testing RSS feeds:', error);
+      toast.error('Erro ao testar RSS feeds');
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  const testAllSources = async () => {
+    try {
+      setFetching(true);
+      const result = await apiClient.testAllSources();
+      toast.success('Teste de todas as fontes concluído');
+    } catch (error) {
+      console.error('Error testing all sources:', error);
+      toast.error('Erro ao testar fontes');
     } finally {
       setFetching(false);
     }
@@ -176,6 +260,42 @@ export const ProvidersManagement: React.FC = () => {
                 </>
               )}
             </Button>
+
+            <Button
+              onClick={() => testRSSFeeds()}
+              disabled={fetching}
+              variant="outline"
+            >
+              {fetching ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testando...
+                </>
+              ) : (
+                <>
+                  <Rss className="mr-2 h-4 w-4" />
+                  Testar RSS
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={testAllSources}
+              disabled={fetching}
+              variant="outline"
+            >
+              {fetching ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testando...
+                </>
+              ) : (
+                <>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Testar Todas
+                </>
+              )}
+            </Button>
           </div>
 
           {fetching && (
@@ -188,6 +308,9 @@ export const ProvidersManagement: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Sources Stats */}
+      <SourcesStats sources={sources} />
 
       {/* Sources List */}
       <div className="space-y-4">
@@ -204,35 +327,86 @@ export const ProvidersManagement: React.FC = () => {
             <Card key={source.id}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-lg font-semibold">{source.name}</h3>
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2">
+                        {getSourceIcon(source.type)}
+                        <h3 className="text-lg font-semibold">{source.name}</h3>
+                      </div>
                       <Badge variant={source.isActive ? 'default' : 'secondary'}>
                         {source.isActive ? 'Ativo' : 'Inativo'}
                       </Badge>
+                      <Badge variant="outline">
+                        {getSourceTypeLabel(source.type)}
+                      </Badge>
                     </div>
                     
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <div className="flex items-center space-x-1">
-                        <ExternalLink className="h-4 w-4" />
-                        <a
-                          href={source.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline"
-                        >
-                          {source.url}
-                        </a>
-                      </div>
+                    <div className="space-y-2">
+                      {source.baseUrl && (
+                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                          <ExternalLink className="h-4 w-4" />
+                          <a
+                            href={source.baseUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            {source.baseUrl}
+                          </a>
+                        </div>
+                      )}
+                      
+                      {source.config && (
+                        <div className="text-sm text-muted-foreground">
+                          <strong>Configuração:</strong>
+                          {source.type === SourceType.RSS_FEED && source.config.sources && (
+                            <span className="ml-2">
+                              {source.config.sources.length} fontes RSS
+                              {source.config.category && ` (${source.config.category})`}
+                            </span>
+                          )}
+                          {source.type === SourceType.GNEWS_API && (
+                            <span className="ml-2">
+                              {source.config.language?.toUpperCase()}/{source.config.country?.toUpperCase()}
+                              {source.config.max && ` • Max: ${source.config.max}`}
+                            </span>
+                          )}
+                          {source.type === SourceType.NEWSAPI_ORG && (
+                            <span className="ml-2">
+                              {source.config.language?.toUpperCase()}/{source.config.country?.toUpperCase()}
+                              {source.config.max && ` • Max: ${source.config.max}`}
+                            </span>
+                          )}
+                          {source.type === SourceType.REDDIT_API && source.config.subreddits && (
+                            <span className="ml-2">
+                              r/{source.config.subreddits.join(', r/')}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
                       {source.lastFetch && (
-                        <span>
-                          Última busca: {new Date(source.lastFetch).toLocaleString('pt-BR')}
-                        </span>
+                        <div className="text-sm text-muted-foreground">
+                          <strong>Última busca:</strong> {new Date(source.lastFetch).toLocaleString('pt-BR')}
+                        </div>
                       )}
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-4">
+                    <Button
+                      onClick={() => testSource(source.id)}
+                      disabled={fetching}
+                      variant="outline"
+                      size="sm"
+                    >
+                      {fetching ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Play className="h-4 w-4" />
+                      )}
+                    </Button>
+                    
                     <div className="flex items-center space-x-2">
                       <span className="text-sm">Ativo</span>
                       <Switch

@@ -2,6 +2,7 @@ export interface NewsProcessingResult {
   summary: string | null;
   headline: string | null;
   commentary: string | null;
+  content: string | null; 
   processed: boolean;
   processedAt: Date;
   error?: string;

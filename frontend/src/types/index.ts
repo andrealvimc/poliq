@@ -37,6 +37,11 @@ export interface News {
   tags: string[];
   status: NewsStatus;
   imageUrl?: string;
+  aiProcessed?: boolean;
+  aiSummary?: string;
+  aiHeadline?: string;
+  aiCommentary?: string;
+  aiContent?: string;
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
@@ -122,11 +127,25 @@ export interface GenerateImageResponse {
 export interface ExternalSource {
   id: string;
   name: string;
-  url: string;
+  type: SourceType;
+  apiKey?: string;
+  baseUrl?: string;
   isActive: boolean;
+  config?: Record<string, any>;
   lastFetch?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export enum SourceType {
+  NEWS_API = 'NEWS_API',
+  RSS_FEED = 'RSS_FEED',
+  WEB_SCRAPER = 'WEB_SCRAPER',
+  SOCIAL_MEDIA = 'SOCIAL_MEDIA',
+  GNEWS_API = 'GNEWS_API',
+  NEWSAPI_ORG = 'NEWSAPI_ORG',
+  REDDIT_API = 'REDDIT_API',
+  TWITTER_API = 'TWITTER_API',
 }
 
 // Publication types

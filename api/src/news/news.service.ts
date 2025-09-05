@@ -6,6 +6,7 @@ import { SlugService } from '../common/services/slug.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { PaginationDto, PaginationResponseDto } from '../common/dto/pagination.dto';
+import { SearchNewsDto } from './dto/search-news.dto';
 
 @Injectable()
 export class NewsService {
@@ -47,17 +48,35 @@ export class NewsService {
     return news;
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<PaginationResponseDto<News>> {
-    const { page = 1, limit = 10 } = paginationDto;
+  async findAll(searchDto: SearchNewsDto): Promise<PaginationResponseDto<News>> {
+    const { page = 1, limit = 10, q, status } = searchDto;
     const skip = (page - 1) * limit;
+
+    // Build where clause for filtering
+    const where: any = {};
+
+    // Add search query filter
+    if (q) {
+      where.OR = [
+        { title: { contains: q, mode: 'insensitive' } },
+        { summary: { contains: q, mode: 'insensitive' } },
+        { content: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    // Add status filter
+    if (status) {
+      where.status = status;
+    }
 
     const [news, total] = await Promise.all([
       this.database.news.findMany({
+        where,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
       }),
-      this.database.news.count(),
+      this.database.news.count({ where }),
     ]);
 
     return new PaginationResponseDto(news, total, page, limit);

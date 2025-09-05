@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { DatabaseService } from '../../database/database.service';
 import { ProvidersService } from '../../providers/providers.service';
+import { HybridNewsService } from '../../providers/services/hybrid-news.service';
 import { QueueService } from '../../queue/queue.service';
 import { NewsService } from '../../news/news.service';
 
@@ -12,6 +13,7 @@ export class NewsSchedulerService {
   constructor(
     private database: DatabaseService,
     private providersService: ProvidersService,
+    private hybridNewsService: HybridNewsService,
     private queueService: QueueService,
     private newsService: NewsService,
   ) {}
@@ -20,8 +22,8 @@ export class NewsSchedulerService {
     this.logger.log('Fetching news from external sources');
     
     try {
-      // Fetch news from all active sources
-      const articles = await this.providersService.fetchNewsFromAllSources();
+      // Fetch news from all active sources using hybrid service
+      const articles = await this.hybridNewsService.fetchNews();
       
       if (articles.length === 0) {
         this.logger.log('No new articles found');
@@ -50,8 +52,8 @@ export class NewsSchedulerService {
           // Create news entry
           const news = await this.newsService.create({
             title: article.title,
-            summary: article.description,
-            content: article.content,
+            summary: article.description || article.content?.substring(0, 200) || '',
+            content: article.content || '',
             originalLink: article.url,
             originalSource: article.source,
             imageUrl: article.imageUrl,

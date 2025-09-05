@@ -21,6 +21,7 @@ import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { SearchNewsDto } from './dto/search-news.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -46,10 +47,12 @@ export class NewsController {
   @Get()
   @ApiOperation({ summary: 'Listar todas as notícias (admin)' })
   @ApiResponse({ status: 200, description: 'Lista de notícias' })
+  @ApiQuery({ name: 'q', required: false, type: String, description: 'Termo de busca' })
+  @ApiQuery({ name: 'status', required: false, enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'], description: 'Filtrar por status' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.newsService.findAll(paginationDto);
+  findAll(@Query() searchDto: SearchNewsDto) {
+    return this.newsService.findAll(searchDto);
   }
 
   @Get('published')

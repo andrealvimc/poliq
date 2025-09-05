@@ -35,6 +35,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "highlight.js": "^11.11.1",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",
@@ -42,7 +43,10 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.62.0",
+    "react-markdown": "^10.1.0",
     "recharts": "^3.1.2",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.5"
