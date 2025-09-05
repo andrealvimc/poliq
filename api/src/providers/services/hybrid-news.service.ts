@@ -147,9 +147,15 @@ export class HybridNewsService {
     // Configurar parser para pegar mais conteúdo
     this.parser = new Parser({
       customFields: {
-        item: ['content:encoded', 'description', 'summary', 'media:description']
+        item: ['content:encoded', 'description', 'summary', 'media:description', 'media:content', 'enclosure']
       },
-      timeout: 10000, // 10 segundos timeout
+      timeout: 15000, // 15 segundos timeout
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Poliq-News-Bot/1.0)',
+        'Accept': 'application/rss+xml, application/xml, text/xml',
+        'Accept-Charset': 'utf-8',
+        'Accept-Encoding': 'gzip, deflate'
+      }
     });
   }
 
@@ -349,7 +355,7 @@ export class HybridNewsService {
 
   private extractContent(item: any): string {
     // Prioridade: content:encoded > content > contentSnippet > description > summary
-    const content = 
+    let content = 
       item['content:encoded'] || 
       item.content || 
       item.contentSnippet || 
@@ -357,22 +363,65 @@ export class HybridNewsService {
       item.summary || 
       '';
 
+    // Corrigir encoding UTF-8
+    if (content) {
+      try {
+        // Tentar corrigir caracteres mal codificados
+        content = content
+          .replace(/tne/g, 'tône')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'");
+      } catch (error) {
+        this.logger.warn('Error fixing encoding:', error.message);
+      }
+    }
+
     // Limpar HTML e tags desnecessárias
     return this.cleanContent(content);
   }
 
   private extractImageUrl(item: any): string | null {
-    // Tentar extrair imagem de diferentes campos
-    if (item.enclosure?.url) return item.enclosure.url;
-    if (item['media:content']?.url) return item['media:content'].url;
-    if (item['media:thumbnail']?.url) return item['media:thumbnail'].url;
+    // Tentar extrair imagem de diferentes campos RSS
+    if (item.enclosure?.url && this.isImageUrl(item.enclosure.url)) {
+      return item.enclosure.url;
+    }
+    if (item['media:content']?.url && this.isImageUrl(item['media:content'].url)) {
+      return item['media:content'].url;
+    }
+    if (item['media:thumbnail']?.url && this.isImageUrl(item['media:thumbnail'].url)) {
+      return item['media:thumbnail'].url;
+    }
     
     // Extrair de HTML se disponível
-    const content = item.content || item.description || '';
-    const imgMatch = content.match(/<img[^>]+src="([^"]+)"/i);
-    if (imgMatch) return imgMatch[1];
+    const content = item.content || item.description || item['content:encoded'] || '';
+    if (content) {
+      // Buscar todas as imagens no conteúdo
+      const imgMatches = content.match(/<img[^>]+src="([^"]+)"/gi);
+      if (imgMatches) {
+        for (const match of imgMatches) {
+          const srcMatch = match.match(/src="([^"]+)"/i);
+          if (srcMatch && this.isImageUrl(srcMatch[1])) {
+            return srcMatch[1];
+          }
+        }
+      }
+      
+      // Buscar por padrões específicos do Exame e Folha
+      const exameMatch = content.match(/https:\/\/[^"]*\.(jpg|jpeg|png|webp)/i);
+      if (exameMatch) return exameMatch[0];
+    }
     
     return null;
+  }
+
+  private isImageUrl(url: string): boolean {
+    if (!url) return false;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+    return imageExtensions.some(ext => url.toLowerCase().includes(ext));
   }
 
   private cleanContent(content: string): string {

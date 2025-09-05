@@ -137,31 +137,23 @@ TAGS:`;
 
     try {
       const prompt = `
-        Reescreva o seguinte conteúdo de notícia com uma perspectiva de direita, mantendo os fatos principais mas apresentando uma análise crítica e conservadora. 
-        O texto deve ser objetivo, mas com um viés editorial de direita que questiona narrativas progressistas e enfatiza valores tradicionais, liberdade individual e responsabilidade pessoal.
+        Reescreva esta notícia com uma perspectiva editorial de direita, mantendo os fatos mas com análise crítica e conservadora. Seja natural e fluido, não robótico.
         
-        Fonte original: ${originalSource || 'Desconhecida'}
+        Fonte: ${originalSource || 'Desconhecida'}
         
-        Conteúdo original:
+        Texto original:
         ${text}
         
         Instruções:
-        - Mantenha os fatos principais da notícia
-        - Apresente uma perspectiva crítica e conservadora
-        - Questione narrativas progressistas quando apropriado
-        - Enfatize valores como liberdade individual, responsabilidade pessoal e tradição
-        - Use linguagem objetiva mas com tom editorial de direita
-        - Mantenha o mesmo tamanho aproximado do texto original
-        - Escreva em português brasileiro
-        - **IMPORTANTE**: Formate o texto em Markdown usando:
-          * **negrito** para ênfase em pontos importantes
-          * *itálico* para citações ou termos técnicos
-          * ## Subtítulos para organizar seções
-          * - Listas com bullets para pontos-chave
-          * > Citações em blockquotes quando apropriado
-          * Links [texto](url) quando relevante
+        - Reescreva de forma natural e fluida
+        - Mantenha os fatos principais
+        - Adicione perspectiva crítica quando apropriado
+        - Use linguagem jornalística profissional
+        - Formate em Markdown simples
+        - Evite repetições e estruturas robóticas
+        - Seja conciso e direto
         
-        Conteúdo reescrito em Markdown:
+        Texto reescrito:
       `;
 
       const response = await firstValueFrom(
@@ -169,10 +161,13 @@ TAGS:`;
           model: this.config.model,
           prompt: prompt,
           stream: false,
-          options: {
-            temperature: 0.7,
-            num_predict: 2000,
-          },
+                  options: {
+          temperature: 0.8,
+          num_predict: 1500,
+          top_p: 0.9,
+          repeat_penalty: 1.1,
+          stop: ['\n\n\n', '---', '===', 'FIM', 'END'],
+        },
         }, {
           timeout: 30000,
         })

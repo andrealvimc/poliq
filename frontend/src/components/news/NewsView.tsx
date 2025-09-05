@@ -75,10 +75,48 @@ export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
     }
   };
 
+  // JSON-LD para SEO
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": news.title,
+    "description": news.summary || news.aiSummary,
+    "image": news.imageUrl ? [news.imageUrl] : [],
+    "datePublished": news.createdAt,
+    "dateModified": news.updatedAt,
+    "author": {
+      "@type": "Organization",
+      "name": "Poliq"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Poliq",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "/logo.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `/news/${news.slug}`
+    },
+    "articleSection": news.tags?.[0] || "Geral",
+    "keywords": news.tags?.join(", ") || "",
+    "url": `/news/${news.slug}`,
+    "isAccessibleForFree": true
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
+    <>
+      {/* JSON-LD para SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button variant="ghost" asChild>
@@ -113,13 +151,15 @@ export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
 
           <CardContent className="p-8">
             {/* Title */}
-            <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
-              {news.title}
-            </h1>
+            <header>
+              <h1 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
+                {news.title}
+              </h1>
+            </header>
 
             {/* Meta Information */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6">
-              <div className="flex items-center space-x-1">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6" role="contentinfo">
+              <time dateTime={news.createdAt} className="flex items-center space-x-1">
                 <Calendar className="h-4 w-4" />
                 <span>
                   {formatDistanceToNow(new Date(news.createdAt), {
@@ -127,16 +167,16 @@ export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
                     locale: ptBR,
                   })}
                 </span>
-              </div>
+              </time>
               
               {news.originalSource && (
                 <span>Fonte: {news.originalSource}</span>
               )}
               
               {news.publishedAt && (
-                <span>
+                <time dateTime={news.publishedAt}>
                   Publicado em: {new Date(news.publishedAt).toLocaleDateString('pt-BR')}
-                </span>
+                </time>
               )}
             </div>
 
@@ -154,18 +194,20 @@ export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
 
             {/* Summary */}
             {news.summary && (
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+              <aside className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
                 <p className="text-lg font-medium text-blue-900">
                   {news.summary}
                 </p>
-              </div>
+              </aside>
             )}
 
             {/* Content */}
-            <MarkdownRenderer 
-              content={news.aiContent || news.content}
-              className="text-gray-700 leading-relaxed"
-            />
+            <main>
+              <MarkdownRenderer 
+                content={news.aiContent || news.content}
+                className="text-gray-700 leading-relaxed"
+              />
+            </main>
             
             {/* AI Disclaimer and Content Warning */}
             <div className="mt-6 space-y-4">
@@ -280,5 +322,6 @@ export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
         </article>
       </div>
     </div>
+    </>
   );
 };

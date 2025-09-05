@@ -147,7 +147,7 @@ export const PublicNewsList: React.FC = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {news.map((item) => (
-            <Card key={item.id} className="hover:shadow-lg p-0 transition-shadow">
+            <Card key={item.id} className="hover:shadow-lg transition-shadow">
               <CardHeader className="py-4 px-4">
                 <div className="space-y-2">
                   <h3 className="text-lg font-semibold line-clamp-2">
@@ -177,7 +177,7 @@ export const PublicNewsList: React.FC = () => {
                 </div>
               </CardHeader>
               
-              <CardContent className="p-4 ">
+              <CardContent className="p-4">
                 {item.imageUrl && (
                   <div className="aspect-video bg-gray-100 rounded-lg mb-4 overflow-hidden">
                     <img
