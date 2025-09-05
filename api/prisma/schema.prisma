@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(ADMIN)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model News {
+  id              String      @id @default(uuid())
+  title           String
+  slug            String      @unique
+  summary         String?
+  content         String?
+  originalLink    String?
+  originalSource  String?
+  imageUrl        String?
+  socialImageUrl  String?     // Generated image for social media with overlays
+  imageGenerated  Boolean     @default(false)
+  tags            String[]
+  publishedAt     DateTime?
+  status          NewsStatus  @default(DRAFT)
+  aiProcessed     Boolean     @default(false)
+  aiSummary       String?
+  aiHeadline      String?
+  aiCommentary    String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  publications    Publication[]
+  queueJobs       QueueJob[]
+
+  @@map("news")
+}
+
+model Publication {
+  id          String            @id @default(uuid())
+  newsId      String
+  platform    PublicationPlatform
+  status      PublicationStatus @default(PENDING)
+  postId      String?           // ID do post na plataforma
+  publishedAt DateTime?
+  errorMsg    String?
+  metadata    Json?             // Dados específicos da plataforma
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  news        News              @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@map("publications")
+}
+
+model QueueJob {
+  id          String    @id @default(uuid())
+  newsId      String?
+  jobType     JobType
+  status      JobStatus @default(PENDING)
+  priority    Int       @default(0)
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  data        Json?
+  result      Json?
+  error       String?
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  news        News?     @relation(fields: [newsId], references: [id], onDelete: Cascade)
+
+  @@map("queue_jobs")
+}
+
+model ExternalSource {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  type        SourceType
+  apiKey      String?
+  baseUrl     String?
+  isActive    Boolean     @default(true)
+  config      Json?       // Configurações específicas da fonte
+  lastFetch   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("external_sources")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum NewsStatus {
+  DRAFT
+  PROCESSING
+  READY
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PublicationPlatform {
+  INSTAGRAM
+  FACEBOOK
+  TWITTER
+  LINKEDIN
+  WEBSITE
+}
+
+enum PublicationStatus {
+  PENDING
+  PROCESSING
+  PUBLISHED
+  FAILED
+  CANCELLED
+}
+
+enum JobType {
+  FETCH_NEWS
+  GENERATE_SUMMARY
+  GENERATE_HEADLINE
+  GENERATE_COMMENTARY
+  GENERATE_IMAGE
+  PUBLISH_TO_SOCIAL
+  PROCESS_CONTENT
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  RETRYING
+}
+
+enum SourceType {
+  NEWS_API
+  RSS_FEED
+  WEB_SCRAPER
+  SOCIAL_MEDIA
+}

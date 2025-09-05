@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: poliq-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: poliq
+      POSTGRES_USER: poliq
+      POSTGRES_PASSWORD: poliq123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - poliq-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U poliq -d poliq"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for Queue Management
+  redis:
+    image: redis:7-alpine
+    container_name: poliq-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - poliq-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Poliq API Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: poliq-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://poliq:poliq123@db:5432/poliq?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 7d
+      API_PREFIX: api/v1
+      THROTTLE_TTL: 60000
+      THROTTLE_LIMIT: 100
+      # Add your API keys here
+      # OPENAI_API_KEY: your-openai-key
+      # GNEWS_API_KEY: your-gnews-key
+      # META_ACCESS_TOKEN: your-meta-token
+      # DALLE_API_KEY: your-dalle-key
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - poliq-network
+    volumes:
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Prisma Studio for database management
+  prisma-studio:
+    image: node:18-alpine
+    container_name: poliq-prisma-studio
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "5555:5555"
+    environment:
+      DATABASE_URL: postgresql://poliq:poliq123@db:5432/poliq?schema=public
+    command: sh -c "npm install prisma && npx prisma studio --hostname 0.0.0.0"
+    depends_on:
+      - db
+    networks:
+      - poliq-network
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  poliq-network:
+    driver: bridge

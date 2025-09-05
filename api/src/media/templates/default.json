@@ -1,0 +1,83 @@
+{
+  "name": "Default Template",
+  "description": "Simple and clean default template",
+  "dimensions": {
+    "width": 1200,
+    "height": 630
+  },
+  "background": {
+    "type": "color",
+    "value": "#ffffff"
+  },
+  "elements": {
+    "category": {
+      "enabled": true,
+      "position": {
+        "x": 60,
+        "y": 60
+      },
+      "style": {
+        "backgroundColor": "#3b82f6",
+        "color": "#ffffff",
+        "fontSize": 14,
+        "fontFamily": "Arial",
+        "fontWeight": "bold",
+        "padding": {
+          "horizontal": 12,
+          "vertical": 6
+        },
+        "borderRadius": 20,
+        "textTransform": "uppercase"
+      }
+    },
+    "title": {
+      "position": {
+        "x": 60,
+        "y": 180,
+        "maxWidth": 1080
+      },
+      "style": {
+        "color": "#1f2937",
+        "fontSize": 42,
+        "fontFamily": "Arial",
+        "fontWeight": "bold",
+        "lineHeight": 1.2,
+        "textAlign": "left",
+        "maxLines": 3
+      }
+    },
+    "subtitle": {
+      "enabled": true,
+      "position": {
+        "x": 60,
+        "y": 360,
+        "maxWidth": 1080
+      },
+      "style": {
+        "color": "#6b7280",
+        "fontSize": 20,
+        "fontFamily": "Arial",
+        "fontWeight": "normal",
+        "lineHeight": 1.3,
+        "textAlign": "left",
+        "maxLines": 2
+      }
+    },
+    "logo": {
+      "enabled": true,
+      "position": {
+        "x": 1020,
+        "y": 530
+      },
+      "style": {
+        "width": 120,
+        "height": 40,
+        "text": "POLIQ",
+        "color": "#3b82f6",
+        "fontSize": 20,
+        "fontFamily": "Arial",
+        "fontWeight": "bold"
+      }
+    }
+  }
+}

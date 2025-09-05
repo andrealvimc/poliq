@@ -1,0 +1,114 @@
+{
+  "name": "InfoMoney Style",
+  "description": "Template inspired by InfoMoney layout with professional design",
+  "dimensions": {
+    "width": 1080,
+    "height": 1080
+  },
+  "background": {
+    "type": "color",
+    "value": "#ffffff",
+    "gradient": {
+      "enabled": false,
+      "direction": "diagonal",
+      "colors": ["#ffffff", "#f8f8f8"]
+    }
+  },
+  "elements": {
+    "category": {
+      "enabled": true,
+      "position": {
+        "x": 40,
+        "y": 40
+      },
+      "style": {
+        "backgroundColor": "#1e40af",
+        "color": "#ffffff",
+        "fontSize": 14,
+        "fontFamily": "Arial",
+        "fontWeight": "bold",
+        "padding": {
+          "horizontal": 12,
+          "vertical": 6
+        },
+        "borderRadius": 4,
+        "textTransform": "uppercase"
+      }
+    },
+    "title": {
+      "position": {
+        "x": 40,
+        "y": 850,
+        "maxWidth": 1000
+      },
+      "style": {
+        "color": "#000000",
+        "fontSize": 36,
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontWeight": "bold",
+        "lineHeight": 1.2,
+        "textAlign": "left",
+        "maxLines": 4
+      }
+    },
+    "subtitle": {
+      "enabled": true,
+      "position": {
+        "x": 40,
+        "y": 950,
+        "maxWidth": 1000
+      },
+      "style": {
+        "color": "#333333",
+        "fontSize": 18,
+        "fontFamily": "Arial",
+        "fontWeight": "normal",
+        "lineHeight": 1.2,
+        "textAlign": "left",
+        "maxLines": 2
+      }
+    },
+    "logo": {
+      "enabled": true,
+      "position": {
+        "x": 940,
+        "y": 1040
+      },
+      "style": {
+        "width": 120,
+        "height": 40,
+        "text": "Poliq",
+        "color": "#000000",
+        "fontSize": 20,
+        "fontFamily": "Arial",
+        "fontWeight": "bold"
+      }
+    },
+    "accent": {
+      "enabled": false,
+      "type": "rectangle",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 8,
+        "height": 1080
+      },
+      "style": {
+        "backgroundColor": "#1e40af"
+      }
+    }
+  },
+  "overlays": {
+    "backgroundImage": {
+      "enabled": true,
+      "opacity": 1.0,
+      "blendMode": "overlay",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 830
+      }
+    }
+  }
+}
