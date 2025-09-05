@@ -2,7 +2,7 @@
   "name": "poliq-backend",
   "version": "1.0.0",
   "description": "API modular em NestJS para o projeto Poliq",
-  "author": "Poliq Team",
+  "author": "André Alvim",
   "private": true,
   "license": "MIT",
   "scripts": {
