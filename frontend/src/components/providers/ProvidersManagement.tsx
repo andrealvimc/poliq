@@ -22,6 +22,7 @@ import {
   Twitter,
   Settings,
 } from 'lucide-react';
+import { useQueryState, parseAsStringEnum } from 'nuqs';
 import { apiClient } from '@/lib/api';
 import { ExternalSource, SourceType } from '@/types';
 import { toast } from 'sonner';
@@ -70,6 +71,9 @@ export const ProvidersManagement: React.FC = () => {
   const [sources, setSources] = useState<ExternalSource[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetching, setFetching] = useState(false);
+  
+  // URL State
+  const [typeFilter, setTypeFilter] = useQueryState('type', parseAsStringEnum(['ALL', 'RSS_FEED', 'GNEWS_API', 'NEWSAPI_ORG', 'REDDIT_API', 'TWITTER_API', 'SOCIAL_MEDIA', 'WEB_SCRAPER']).withDefault('ALL'));
 
   useEffect(() => {
     fetchSources();
@@ -180,6 +184,12 @@ export const ProvidersManagement: React.FC = () => {
       setFetching(false);
     }
   };
+
+  // Filter sources based on URL state
+  const filteredSources = sources.filter(source => {
+    if (typeFilter === 'ALL') return true;
+    return source.type === typeFilter;
+  });
 
   if (loading) {
     return (
@@ -314,7 +324,28 @@ export const ProvidersManagement: React.FC = () => {
 
       {/* Sources List */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Fontes Externas</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Fontes Externas</h2>
+          
+          {/* Type Filter */}
+          <div className="flex items-center space-x-2">
+            <label className="text-sm font-medium">Filtrar por tipo:</label>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as any)}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="ALL">Todos</option>
+              <option value="RSS_FEED">RSS Feed</option>
+              <option value="GNEWS_API">GNews API</option>
+              <option value="NEWSAPI_ORG">NewsAPI</option>
+              <option value="REDDIT_API">Reddit API</option>
+              <option value="TWITTER_API">Twitter API</option>
+              <option value="SOCIAL_MEDIA">Social Media</option>
+              <option value="WEB_SCRAPER">Web Scraper</option>
+            </select>
+          </div>
+        </div>
         
         {sources.length === 0 ? (
           <Card>
@@ -323,7 +354,7 @@ export const ProvidersManagement: React.FC = () => {
             </CardContent>
           </Card>
         ) : (
-          sources.map((source) => (
+          filteredSources.map((source) => (
             <Card key={source.id}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">

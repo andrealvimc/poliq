@@ -298,6 +298,17 @@ class ApiClient {
       queueStats: Array.isArray(queueStats) ? queueStats : [],
     };
   }
+
+  // View tracking
+  async incrementNewsViews(newsId: string): Promise<{ views: number }> {
+    const response: AxiosResponse<{ views: number }> = await this.client.post(`/news/${newsId}/view`);
+    return response.data;
+  }
+
+  async getPopularNews(limit: number = 10): Promise<News[]> {
+    const response: AxiosResponse<News[]> = await this.client.get(`/news/popular?limit=${limit}`);
+    return response.data;
+  }
 }
 
 export const apiClient = new ApiClient();

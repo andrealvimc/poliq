@@ -40,6 +40,7 @@ import {
   Archive,
   Loader2,
 } from 'lucide-react';
+import { useQueryState, parseAsString, parseAsInteger, parseAsStringEnum } from 'nuqs';
 import { apiClient } from '@/lib/api';
 import { News, NewsStatus, SearchParams } from '@/types';
 import { toast } from 'sonner';
@@ -47,16 +48,17 @@ import { toast } from 'sonner';
 export const NewsList: React.FC = () => {
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<NewsStatus | 'ALL'>('ALL');
-  const [aiStatusFilter, setAiStatusFilter] = useState<'ALL' | 'completed' | 'processing' | 'pending'>('ALL');
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [activeFilters, setActiveFilters] = useState<SearchParams>({});
   
-  // Seleção múltipla
+  // URL State
+  const [searchQuery, setSearchQuery] = useQueryState('q', parseAsString.withDefault(''));
+  const [statusFilter, setStatusFilter] = useQueryState('status', parseAsStringEnum(['ALL', 'DRAFT', 'PUBLISHED', 'ARCHIVED']).withDefault('ALL'));
+  const [aiStatusFilter, setAiStatusFilter] = useQueryState('aiStatus', parseAsStringEnum(['ALL', 'completed', 'processing', 'pending']).withDefault('ALL'));
+  const [currentPage, setCurrentPage] = useQueryState('page', parseAsInteger.withDefault(1));
+  const [itemsPerPage, setItemsPerPage] = useQueryState('limit', parseAsInteger.withDefault(10));
+  
+  // Seleção múltipla (mantém estado local)
   const [selectedNews, setSelectedNews] = useState<Set<string>>(new Set());
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
@@ -67,7 +69,8 @@ export const NewsList: React.FC = () => {
       const requestParams = {
         page: currentPage,
         limit: itemsPerPage,
-        ...activeFilters,
+        q: searchQuery || undefined,
+        status: statusFilter !== 'ALL' ? statusFilter as NewsStatus : undefined,
         ...params,
       };
       console.log('Fetching news with params:', requestParams);
@@ -91,19 +94,13 @@ export const NewsList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, activeFilters, aiStatusFilter]);
+  }, [currentPage, itemsPerPage, searchQuery, statusFilter, aiStatusFilter]);
 
   // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchQuery.trim()) {
-        setActiveFilters(prev => ({ ...prev, q: searchQuery.trim() }));
         setCurrentPage(1);
-      } else {
-        setActiveFilters(prev => {
-          const { q, ...rest } = prev;
-          return rest;
-        });
       }
     }, 500);
 
@@ -116,24 +113,11 @@ export const NewsList: React.FC = () => {
   }, [fetchNews]);
 
   const handleSearch = () => {
-    const newFilters: SearchParams = {};
-    if (searchQuery.trim()) newFilters.q = searchQuery.trim();
-    if (statusFilter !== 'ALL') newFilters.status = statusFilter;
-    
-    setActiveFilters(newFilters);
     setCurrentPage(1);
   };
 
   const handleStatusChange = (status: NewsStatus | 'ALL') => {
     setStatusFilter(status);
-    const newFilters: SearchParams = { ...activeFilters };
-    if (status !== 'ALL') {
-      newFilters.status = status;
-    } else {
-      delete newFilters.status;
-    }
-    
-    setActiveFilters(newFilters);
     setCurrentPage(1);
   };
 
@@ -145,7 +129,7 @@ export const NewsList: React.FC = () => {
   const clearFilters = () => {
     setSearchQuery('');
     setStatusFilter('ALL');
-    setActiveFilters({});
+    setAiStatusFilter('ALL');
     setCurrentPage(1);
   };
 
@@ -161,8 +145,8 @@ export const NewsList: React.FC = () => {
   };
 
   const hasActiveFilters = useMemo(() => {
-    return Object.keys(activeFilters).length > 0;
-  }, [activeFilters]);
+    return searchQuery.trim() !== '' || statusFilter !== 'ALL' || aiStatusFilter !== 'ALL';
+  }, [searchQuery, statusFilter, aiStatusFilter]);
 
   const getStatusBadgeVariant = (status: NewsStatus) => {
     switch (status) {
@@ -401,16 +385,23 @@ export const NewsList: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="text-sm font-medium text-blue-800">Filtros ativos:</span>
-                {activeFilters.q && (
+                {searchQuery.trim() && (
                   <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    Busca: "{activeFilters.q}"
+                    Busca: "{searchQuery}"
                   </Badge>
                 )}
-                {activeFilters.status && (
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    Status: {activeFilters.status === 'DRAFT' ? 'Rascunho' : 
-                             activeFilters.status === 'PUBLISHED' ? 'Publicado' : 
-                             activeFilters.status === 'ARCHIVED' ? 'Arquivado' : activeFilters.status}
+                {statusFilter !== 'ALL' && (
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    Status: {statusFilter === 'DRAFT' ? 'Rascunho' : 
+                             statusFilter === 'PUBLISHED' ? 'Publicado' : 
+                             statusFilter === 'ARCHIVED' ? 'Arquivado' : statusFilter}
+                  </Badge>
+                )}
+                {aiStatusFilter !== 'ALL' && (
+                  <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                    IA: {aiStatusFilter === 'completed' ? 'Processado' : 
+                          aiStatusFilter === 'processing' ? 'Processando' : 
+                          aiStatusFilter === 'pending' ? 'Pendente' : aiStatusFilter}
                   </Badge>
                 )}
               </div>

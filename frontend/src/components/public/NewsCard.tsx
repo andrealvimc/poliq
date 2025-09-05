@@ -110,7 +110,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-1 text-gray-400">
                 <Eye className="h-4 w-4" />
-                <span>{Math.floor(Math.random() * 1000) + 100}</span>
+                <span>{news.views?.toLocaleString() || 0}</span>
               </div>
             </div>
           </div>

@@ -118,6 +118,22 @@ export class NewsController {
     return this.newsService.update(id, updateNewsDto);
   }
 
+  @Post(':id/view')
+  @ApiOperation({ summary: 'Incrementar visualizações da notícia' })
+  @ApiResponse({ status: 200, description: 'Visualizações incrementadas com sucesso' })
+  @ApiResponse({ status: 404, description: 'Notícia não encontrada' })
+  incrementViews(@Param('id') id: string) {
+    return this.newsService.incrementViews(id);
+  }
+
+  @Get('popular')
+  @ApiOperation({ summary: 'Listar notícias mais visualizadas' })
+  @ApiResponse({ status: 200, description: 'Lista de notícias populares' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Número de notícias a retornar' })
+  getPopularNews(@Query('limit') limit?: number) {
+    return this.newsService.getPopularNews(limit);
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)

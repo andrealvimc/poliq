@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
@@ -17,16 +18,16 @@ import {
   Share2
 } from 'lucide-react';
 import { News } from '@/types';
+import { usePopularNews } from '@/hooks/usePopularNews';
 
 interface NewsSidebarProps {
-  popularNews: News[];
   recentNews: News[];
 }
 
 export const NewsSidebar: React.FC<NewsSidebarProps> = ({ 
-  popularNews, 
   recentNews 
 }) => {
+  const { popularNews, loading: popularLoading } = usePopularNews(5);
   return (
     <div className="space-y-6">
       {/* Popular News */}
@@ -38,41 +39,53 @@ export const NewsSidebar: React.FC<NewsSidebarProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {popularNews.slice(0, 5).map((item, index) => (
-            <div key={item.id} className="group">
-              <div className="flex space-x-3">
-                {/* Number */}
-                <div className="flex-shrink-0 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-sm font-bold">
-                  {index + 1}
+          {popularLoading ? (
+            Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="flex space-x-3">
+                <Skeleton className="w-6 h-6 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
                 </div>
-                
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-semibold line-clamp-2 group-hover:text-blue-600 transition-colors">
-                    <Link href={`/news/${item.slug}`}>
-                      {item.title}
-                    </Link>
-                  </h4>
+              </div>
+            ))
+          ) : (
+            popularNews.map((item, index) => (
+              <div key={item.id} className="group">
+                <div className="flex space-x-3">
+                  {/* Number */}
+                  <div className="flex-shrink-0 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-sm font-bold">
+                    {index + 1}
+                  </div>
                   
-                  <div className="flex items-center space-x-2 mt-1 text-xs text-gray-500">
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>
-                        {formatDistanceToNow(new Date(item.createdAt), {
-                          addSuffix: true,
-                          locale: ptBR,
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Eye className="h-3 w-3" />
-                      <span>{Math.floor(Math.random() * 1000) + 100}</span>
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold line-clamp-2 group-hover:text-blue-600 transition-colors">
+                      <Link href={`/news/${item.slug}`}>
+                        {item.title}
+                      </Link>
+                    </h4>
+                    
+                    <div className="flex items-center space-x-2 mt-1 text-xs text-gray-500">
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>
+                          {formatDistanceToNow(new Date(item.createdAt), {
+                            addSuffix: true,
+                            locale: ptBR,
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Eye className="h-3 w-3" />
+                        <span>{item.views?.toLocaleString() || 0}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </CardContent>
       </Card>
 

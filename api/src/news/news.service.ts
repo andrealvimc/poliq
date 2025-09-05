@@ -236,4 +236,39 @@ export class NewsService {
 
     return new PaginationResponseDto(news, total, page, limit);
   }
+
+  async incrementViews(id: string): Promise<{ views: number }> {
+    const news = await this.database.news.findUnique({
+      where: { id },
+    });
+
+    if (!news) {
+      throw new NotFoundException('Notícia não encontrada');
+    }
+
+    const updatedNews = await this.database.news.update({
+      where: { id },
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
+    });
+
+    return { views: updatedNews.views };
+  }
+
+  async getPopularNews(limit: number = 10): Promise<News[]> {
+    const news = await this.database.news.findMany({
+      where: {
+        status: NewsStatus.PUBLISHED,
+      },
+      orderBy: {
+        views: 'desc',
+      },
+      take: limit,
+    });
+
+    return news;
+  }
 }

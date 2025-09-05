@@ -42,6 +42,7 @@ model News {
   aiHeadline      String?
   aiCommentary    String?
   aiContent       String?     
+  views           Int         @default(0)     // Contador de visualizações
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 

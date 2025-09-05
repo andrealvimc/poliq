@@ -34,6 +34,7 @@ import {
   Globe,
   Shield
 } from 'lucide-react';
+import { useQueryState, parseAsString, parseAsInteger, parseAsStringEnum } from 'nuqs';
 import { apiClient } from '@/lib/api';
 import { News, SearchParams } from '@/types';
 import { FeaturedNews } from './FeaturedNews';
@@ -43,13 +44,15 @@ import { NewsSidebar } from './NewsSidebar';
 export const PublicNewsList: React.FC = () => {
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [tagFilter, setTagFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'trending'>('recent');
+
+  // URL State
+  const [searchQuery, setSearchQuery] = useQueryState('q', parseAsString.withDefault(''));
+  const [tagFilter, setTagFilter] = useQueryState('tag', parseAsString.withDefault('all'));
+  const [currentPage, setCurrentPage] = useQueryState('page', parseAsInteger.withDefault(1));
+  const [viewMode, setViewMode] = useQueryState('view', parseAsStringEnum(['grid', 'list']).withDefault('grid'));
+  const [sortBy, setSortBy] = useQueryState('sort', parseAsStringEnum(['recent', 'popular', 'trending']).withDefault('recent'));
 
   useEffect(() => {
     fetchNews();
@@ -93,8 +96,7 @@ export const PublicNewsList: React.FC = () => {
     return Array.from(new Set(allTags)).slice(0, 10);
   };
 
-  // Simular notícias populares e recentes para sidebar
-  const popularNews = news.slice(0, 5);
+  // Simular notícias recentes para sidebar
   const recentNews = news.slice(0, 4);
 
   if (loading) {
@@ -306,7 +308,7 @@ export const PublicNewsList: React.FC = () => {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <NewsSidebar popularNews={popularNews} recentNews={recentNews} />
+          <NewsSidebar recentNews={recentNews} />
         </div>
       </div>
 

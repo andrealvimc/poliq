@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,14 +19,32 @@ import {
   Twitter,
   Instagram,
   AlertTriangle,
+  Eye,
 } from 'lucide-react';
 import { News, NewsStatus } from '@/types';
+import { apiClient } from '@/lib/api';
 
 interface NewsViewProps {
   news: News;
 }
 
 export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
+  const [views, setViews] = useState(news.views || 0);
+
+  // Incrementar views quando o componente for montado
+  useEffect(() => {
+    const incrementViews = async () => {
+      try {
+        const response = await apiClient.incrementNewsViews(news.id);
+        setViews(response.views);
+      } catch (error) {
+        console.error('Erro ao incrementar views:', error);
+      }
+    };
+
+    incrementViews();
+  }, [news.id]);
+
   const getStatusBadgeVariant = (status: NewsStatus) => {
     switch (status) {
       case NewsStatus.PUBLISHED:
@@ -168,6 +186,11 @@ export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
                   })}
                 </span>
               </time>
+              
+              <div className="flex items-center space-x-1">
+                <Eye className="h-4 w-4" />
+                <span>{views.toLocaleString()} visualizações</span>
+              </div>
               
               {news.originalSource && (
                 <span>Fonte: {news.originalSource}</span>

@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,10 +20,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
+        <NuqsAdapter>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

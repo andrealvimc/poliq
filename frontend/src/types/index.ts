@@ -42,6 +42,7 @@ export interface News {
   aiHeadline?: string;
   aiCommentary?: string;
   aiContent?: string;
+  views?: number;
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
