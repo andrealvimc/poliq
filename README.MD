@@ -1,6 +1,21 @@
 # 🚀 Poliq - Automated News Processing Platform
 
-**Poliq** é uma plataforma automatizada de processamento de notícias que busca, processa com IA e gera conteúdo visual para redes sociais.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-10+-red.svg)](https://nestjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.0+-2D3748.svg)](https://www.prisma.io/)
+
+**Poliq** é uma plataforma automatizada de processamento de notícias que busca, processa com IA e gera conteúdo visual para redes sociais. Transforme notícias em conteúdo viral com inteligência artificial!
+
+## 🎯 Por que usar o Poliq?
+
+- ⚡ **Automação Completa**: De fetch até publicação, tudo automatizado
+- 🧠 **IA Avançada**: Processamento inteligente com Ollama ou OpenAI
+- 🎨 **Design Profissional**: Templates prontos no padrão InfoMoney
+- 📱 **Multi-plataforma**: Gera conteúdo para Instagram, Twitter, LinkedIn
+- 🔧 **Fácil Deploy**: Deploy em minutos com Railway, Docker ou VPS
+- 💰 **Custo Zero**: Funciona 100% local com Ollama (opcional OpenAI)
 
 ## ✨ Features
 
@@ -203,17 +218,150 @@ npx prisma studio
 npx prisma migrate dev
 ```
 
-## 📦 Deployment
+## 🚀 Quick Demo
 
 ```bash
-# Production build
-pnpm run build
+# 1. Clone e instale
+git clone https://github.com/andrealvimc/poliq.git
+cd poliq && pnpm install
 
-# Start production
-pnpm run start:prod
+# 2. Configure (copie o .env.example)
+cp env.example .env
 
-# Docker deployment
-docker-compose -f docker-compose.prod.yml up -d
+# 3. Inicie os serviços
+docker-compose up -d  # PostgreSQL + Redis
+ollama serve          # IA local (opcional)
+
+# 4. Configure o banco
+npx prisma migrate deploy
+npx prisma db seed
+
+# 5. Inicie a aplicação
+pnpm run start:dev
+
+# 6. Acesse: http://localhost:3000
+# Login: admin@poliq.com.br / admin123
+```
+
+## 🎨 Screenshots
+
+### Dashboard Administrativo
+![Dashboard Admin](media/admin-home.png)
+*Interface administrativa para gerenciar notícias, filas e configurações*
+
+### Página Principal
+![Home Page](media/home.png)
+*Página inicial com notícias processadas e categorizadas*
+
+### Visualização de Notícia
+![Notícia](media/noticia.png)
+*Página de detalhes da notícia com conteúdo gerado por IA*
+
+## 📦 Deployment
+
+### 🚀 Deploy Rápido (Railway)
+
+1. **Fork do repositório** e conecte ao Railway
+2. **Configure as variáveis de ambiente**:
+   ```env
+   DATABASE_URL=postgresql://...
+   GNEWS_API_KEY=your-key
+   AI_PROVIDER=openai
+   OPENAI_API_KEY=sk-...
+   REDIS_URL=redis://...
+   JWT_SECRET=your-secret
+   ```
+3. **Deploy automático** - Railway detecta o `package.json` e faz deploy
+
+### 🐳 Deploy com Docker
+
+```bash
+# Clone e configure
+git clone https://github.com/andrealvimc/poliq.git
+cd poliq
+
+# Configure environment
+cp env.example .env
+# Edite o .env com suas configurações
+
+# Deploy com Docker Compose
+docker-compose up -d
+
+# Ou build customizado
+docker build -t poliq-api .
+docker run -p 3000:3000 --env-file .env poliq-api
+```
+
+### ☁️ Deploy Manual (VPS/Cloud)
+
+```bash
+# 1. Instalar dependências do sistema
+sudo apt update
+sudo apt install nodejs npm postgresql redis-server
+
+# 2. Configurar banco de dados
+sudo -u postgres createdb poliq
+sudo -u postgres createuser poliq_user
+
+# 3. Deploy da aplicação
+git clone https://github.com/andrealvimc/poliq.git
+cd poliq
+npm install
+npx prisma migrate deploy
+npx prisma db seed
+
+# 4. Iniciar serviços
+pm2 start npm --name "poliq-api" -- run start:prod
+```
+
+### 🔧 Configuração de Produção
+
+#### Variáveis de Ambiente Obrigatórias
+```env
+# Database
+DATABASE_URL="postgresql://user:pass@host:5432/poliq"
+
+# APIs Externas
+GNEWS_API_KEY="your-gnews-key"
+OPENAI_API_KEY="sk-your-openai-key"  # ou configure Ollama
+
+# Redis
+REDIS_URL="redis://localhost:6379"
+
+# JWT
+JWT_SECRET="your-super-secret-jwt-key"
+
+# AI Provider
+AI_PROVIDER="openai"  # ou "ollama"
+```
+
+#### Configuração de Domínio
+```bash
+# Nginx reverse proxy
+server {
+    listen 80;
+    server_name api.poliq.com.br;
+    
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+### 📊 Monitoramento
+
+```bash
+# Health check
+curl https://api.poliq.com.br/api/v1/health
+
+# Queue status
+curl https://api.poliq.com.br/api/v1/queue/stats
+
+# Logs (com PM2)
+pm2 logs poliq-api
+pm2 monit
 ```
 
 ## 🤝 Contributing
@@ -228,12 +376,38 @@ docker-compose -f docker-compose.prod.yml up -d
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 🗺️ Roadmap
+
+### ✅ Versão Atual (v1.0)
+- [x] Fetch automático de notícias
+- [x] Processamento com IA (Ollama/OpenAI)
+- [x] Geração de imagens para Instagram
+- [x] Sistema de filas assíncronas
+- [x] Dashboard administrativo
+- [x] Autenticação JWT
+
+### 🚧 Próximas Versões
+- [ ] **v1.1**: Suporte a Twitter e LinkedIn
+- [ ] **v1.2**: Templates customizáveis
+- [ ] **v1.3**: API de webhooks
+- [ ] **v1.4**: Analytics e métricas
+- [ ] **v1.5**: Integração com Meta Business
+- [ ] **v2.0**: Multi-tenant e white-label
+
 ## 🆘 Support
 
-- 📧 Email: support@poliq.com.br
-- 💬 Issues: [GitHub Issues](https://github.com/andrealvimc/poliq/issues)
-- 📖 Docs: [Documentation](https://docs.poliq.com.br)
+- 📧 **Email**: support@poliq.com.br
+- 💬 **Issues**: [GitHub Issues](https://github.com/andrealvimc/poliq/issues)
+- 📖 **Docs**: [Documentation](https://docs.poliq.com.br)
+- 🐦 **Twitter**: [@poliq_news](https://twitter.com/poliq_news)
+- 💼 **LinkedIn**: [Poliq News](https://linkedin.com/company/poliq-news)
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=andrealvimc/poliq&type=Date)](https://star-history.com/#andrealvimc/poliq&Date)
 
 ---
 
-**Made with ❤️ by Poliq Team**
+**Made with ❤️ by [André Alvim](https://github.com/andrealvimc)**
+
+*Transformando notícias em conteúdo viral desde 2024* 🚀
