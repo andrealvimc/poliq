@@ -73,9 +73,9 @@ export const NewsCard: React.FC<NewsCardProps> = ({
   }
 
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
+    <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col">
       {/* Image */}
-      {news.imageUrl && (
+      {news.imageUrl ? (
         <div className="aspect-video overflow-hidden">
           <img
             src={news.imageUrl}
@@ -83,10 +83,19 @@ export const NewsCard: React.FC<NewsCardProps> = ({
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
+      ) : (
+        <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+          <div className="text-center text-gray-400">
+            <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full flex items-center justify-center">
+              <span className="text-2xl">📰</span>
+            </div>
+            <p className="text-sm font-medium">Sem imagem</p>
+          </div>
+        </div>
       )}
       
-      <CardContent className="p-6">
-        <div className="space-y-4">
+      <CardContent className="p-6 flex-1 flex flex-col">
+        <div className="space-y-4 flex-1 flex flex-col">
           {/* Meta Info */}
           <div className="flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center space-x-3">
@@ -124,7 +133,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
 
           {/* Summary */}
           {news.summary && (
-            <p className="text-gray-600 line-clamp-3">
+            <p className="text-gray-600 line-clamp-3 flex-1">
               {news.summary}
             </p>
           )}
@@ -146,7 +155,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between pt-2 mt-auto">
             <Button variant="ghost" size="sm" asChild className="group-hover:bg-blue-50">
               <Link href={`/news/${news.slug}`}>
                 Ler mais

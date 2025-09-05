@@ -43,6 +43,123 @@ export class RSSTestController {
     }
   }
 
+  @Post('newsapi')
+  async testNewsAPI(@Body() body: { category?: string }) {
+    try {
+      const categories = body.category ? [body.category] : ['politica', 'tecnologia', 'economia'];
+      const news = await this.hybridNewsService.fetchNews(categories);
+      
+      // Filtrar apenas NewsAPI
+      const newsApiNews = news.filter(item => 
+        !item.source.includes('RSS') && 
+        !item.source.includes('G1') && 
+        !item.source.includes('UOL') &&
+        !item.source.includes('Estadão') &&
+        !item.source.includes('Folha')
+      );
+
+      return {
+        message: 'NewsAPI testado com sucesso',
+        count: newsApiNews.length,
+        articles: newsApiNews.map(item => ({
+          title: item.title,
+          content: item.content,
+          contentLength: item.content.length,
+          source: item.source,
+          category: item.category,
+          url: item.url,
+          hasFullContent: item.content.length > 200
+        }))
+      };
+    } catch (error) {
+      return {
+        message: 'Erro ao testar NewsAPI',
+        error: error.message,
+        count: 0,
+        articles: []
+      };
+    }
+  }
+
+  @Get('newsapi-status')
+  async testNewsAPIStatus() {
+    try {
+      // Verificar se a chave está configurada
+      const configService = this.hybridNewsService['configService'];
+      const newsApiKey = configService.get('externalApis.newsApi.apiKey');
+      
+      return {
+        message: 'Status do NewsAPI',
+        configured: !!(newsApiKey && newsApiKey !== 'undefined' && newsApiKey.trim() !== ''),
+        hasKey: !!newsApiKey,
+        keyLength: newsApiKey ? newsApiKey.length : 0,
+        keyPreview: newsApiKey ? `${newsApiKey.substring(0, 8)}...` : 'N/A'
+      };
+    } catch (error) {
+      return {
+        message: 'Erro ao verificar status do NewsAPI',
+        error: error.message,
+        configured: false
+      };
+    }
+  }
+
+  @Post('all')
+  async testAllSources(@Body() body: { category?: string }) {
+    try {
+      const categories = body.category ? [body.category] : ['politica', 'tecnologia', 'economia'];
+      const news = await this.hybridNewsService.fetchNews(categories);
+
+      // Separar por fonte
+      const rssNews = news.filter(item => 
+        item.source.includes('RSS') || 
+        item.source.includes('G1') || 
+        item.source.includes('UOL') ||
+        item.source.includes('Estadão') ||
+        item.source.includes('Folha')
+      );
+
+      const newsApiNews = news.filter(item => 
+        !item.source.includes('RSS') && 
+        !item.source.includes('G1') && 
+        !item.source.includes('UOL') &&
+        !item.source.includes('Estadão') &&
+        !item.source.includes('Folha')
+      );
+
+      return {
+        message: 'Todas as fontes testadas com sucesso',
+        total: news.length,
+        rss: {
+          count: rssNews.length,
+          articles: rssNews.map(item => ({
+            title: item.title,
+            source: item.source,
+            category: item.category,
+            url: item.url
+          }))
+        },
+        newsapi: {
+          count: newsApiNews.length,
+          articles: newsApiNews.map(item => ({
+            title: item.title,
+            source: item.source,
+            category: item.category,
+            url: item.url
+          }))
+        }
+      };
+    } catch (error) {
+      return {
+        message: 'Erro ao testar todas as fontes',
+        error: error.message,
+        total: 0,
+        rss: { count: 0, articles: [] },
+        newsapi: { count: 0, articles: [] }
+      };
+    }
+  }
+
   @Post('fetch-and-save-test')
   async testFetchAndSave() {
     try {

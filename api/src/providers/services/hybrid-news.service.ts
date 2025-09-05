@@ -163,11 +163,25 @@ export class HybridNewsService {
     const allNews: NewsProviderResult[] = [];
 
     try {
-      // Usar apenas RSS feeds (GNews desativado)
-      this.logger.log('Using RSS-only mode (GNews disabled)');
+      this.logger.log('Fetching news from multiple sources...');
       
+      // Buscar de RSS feeds
       const rssResults = await this.fetchFromRSS(categories);
       allNews.push(...rssResults);
+      this.logger.log(`RSS: ${rssResults.length} articles`);
+
+      // Buscar do NewsAPI se estiver configurado
+      if (this.newsApiKey && this.newsApiKey !== 'undefined' && this.newsApiKey.trim() !== '') {
+        try {
+          const newsApiResults = await this.fetchFromNewsAPI(categories);
+          allNews.push(...newsApiResults);
+          this.logger.log(`NewsAPI: ${newsApiResults.length} articles`);
+        } catch (error) {
+          this.logger.warn('NewsAPI failed, continuing with RSS only:', error.message);
+        }
+      } else {
+        this.logger.log('NewsAPI not configured or invalid key, skipping...');
+      }
 
       // Remover duplicatas e ordenar por data
       const uniqueNews = this.removeDuplicates(allNews);
@@ -175,40 +189,48 @@ export class HybridNewsService {
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
       );
 
-      this.logger.log(`Fetched ${sortedNews.length} news from RSS sources`);
+      this.logger.log(`Total: ${sortedNews.length} unique articles from all sources`);
       return sortedNews;
 
     } catch (error) {
-      this.logger.error('Error fetching news from RSS sources:', error);
+      this.logger.error('Error fetching news from sources:', error);
       throw error;
     }
   }
 
   private async fetchFromNewsAPI(categories?: string[]): Promise<NewsProviderResult[]> {
     try {
-      const query = this.buildCategoryQuery(categories || ['politica', 'tecnologia', 'economia']);
+      // Usar query mais simples para evitar erro 400
+      const query = this.buildSimpleQuery(categories || ['politica', 'tecnologia', 'economia']);
+      
+      this.logger.log(`NewsAPI query: ${query}`);
       
       const params = new URLSearchParams({
         q: query,
         language: 'pt',
-        country: 'br',
         sortBy: 'publishedAt',
-        pageSize: '20',
+        pageSize: '10', // Reduzir para evitar limite
         apiKey: this.newsApiKey,
       });
 
       const url = `https://newsapi.org/v2/everything?${params.toString()}`;
+      this.logger.log(`NewsAPI URL: ${url}`);
       
       const response = await firstValueFrom(
         this.httpService.get(url)
       );
+
+      if (!response.data.articles) {
+        this.logger.warn('NewsAPI returned no articles');
+        return [];
+      }
 
       return response.data.articles.map(article => ({
         title: article.title,
         content: article.description || article.content,
         url: article.url,
         publishedAt: new Date(article.publishedAt),
-        source: article.source.name,
+        source: `${article.source.name}`,
         category: this.categorizeContent(article.title + ' ' + article.description),
         imageUrl: article.urlToImage,
         author: article.author
@@ -216,6 +238,10 @@ export class HybridNewsService {
 
     } catch (error) {
       this.logger.warn('NewsAPI failed:', error.message);
+      if (error.response) {
+        this.logger.warn('NewsAPI response status:', error.response.status);
+        this.logger.warn('NewsAPI response data:', error.response.data);
+      }
       return [];
     }
   }
@@ -317,6 +343,21 @@ export class HybridNewsService {
       categoryMap[cat]?.join(' OR ') || cat
     );
 
+    return queries.join(' OR ');
+  }
+
+  private buildSimpleQuery(categories: string[]): string {
+    // Query mais simples para evitar erro 400 do NewsAPI
+    const simpleMap = {
+      politica: 'política Brasil',
+      tecnologia: 'tecnologia Brasil',
+      economia: 'economia Brasil',
+      saude: 'saúde Brasil',
+      esportes: 'esportes Brasil',
+      entretenimento: 'entretenimento Brasil'
+    };
+
+    const queries = categories.map(cat => simpleMap[cat] || `${cat} Brasil`);
     return queries.join(' OR ');
   }
 
