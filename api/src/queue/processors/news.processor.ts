@@ -64,15 +64,15 @@ export class NewsProcessor {
         },
       });
 
-      // 🎯 NOW trigger media generation with AI-optimized title
-      if (result.processed && result.headline) {
-        this.logger.log(`Triggering media generation for news: ${newsId} with AI title: ${result.headline}`);
-        await this.queueService.addMediaGenerationJob(newsId, result.headline, 2);
-      } else {
-        // Fallback to original title if AI processing failed
-        this.logger.log(`Triggering media generation for news: ${newsId} with original title (AI failed)`);
-        await this.queueService.addMediaGenerationJob(newsId, news.title, 2);
-      }
+      // 🎯 DISABLED: Media generation disabled to save local resources
+      // if (result.processed && result.headline) {
+      //   this.logger.log(`Triggering media generation for news: ${newsId} with AI title: ${result.headline}`);
+      //   await this.queueService.addMediaGenerationJob(newsId, result.headline, 2);
+      // } else {
+      //   // Fallback to original title if AI processing failed
+      //   this.logger.log(`Triggering media generation for news: ${newsId} with original title (AI failed)`);
+      //   await this.queueService.addMediaGenerationJob(newsId, news.title, 2);
+      // }
 
       this.logger.log(`Successfully processed news: ${newsId}`);
       return result;

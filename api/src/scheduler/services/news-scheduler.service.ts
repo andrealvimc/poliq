@@ -113,10 +113,10 @@ export class NewsSchedulerService {
         // Add to processing queue
         await this.queueService.addNewsProcessingJob(news.id, 2);
         
-        // Add to media generation queue if no image
-        if (!news.imageUrl) {
-          await this.queueService.addMediaGenerationJob(news.id, news.title, 2);
-        }
+        // DISABLED: Media generation disabled to save local resources
+        // if (!news.imageUrl) {
+        //   await this.queueService.addMediaGenerationJob(news.id, news.title, 2);
+        // }
       }
 
       this.logger.log(`Added ${unprocessedNews.length} news items to processing queue`);
