@@ -308,34 +308,41 @@ export default function SobrePage() {
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="text-center">
-          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+        {/* Open Source */}
+        <section className="mb-16">
+          <Card className="bg-gradient-to-r from-gray-50 to-blue-50 border-gray-200">
             <CardContent className="py-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Explore o Futuro das Notícias
-              </h2>
-              <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                Descubra como a inteligência artificial pode transformar 
-                a forma como você consome informação.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" asChild>
-                  <Link href="/">
-                    Ver Notícias
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button variant="outline" size="lg" asChild>
-                  <a
-                    href="https://github.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Código Fonte
-                    <ExternalLink className="ml-2 h-4 w-4" />
-                  </a>
-                </Button>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Code className="h-8 w-8 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  Projeto Open Source
+                </h2>
+                <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                  O Poliq é um projeto de código aberto disponível no GitHub. 
+                  Contribua, reporte bugs ou simplesmente explore o código para 
+                  entender como funciona nossa plataforma de notícias inteligentes.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button size="lg" asChild>
+                    <a
+                      href="https://github.com/andrealvimc/poliq"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Code className="mr-2 h-4 w-4" />
+                      Ver no GitHub
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="lg" asChild>
+                    <Link href="/">
+                      Ver Notícias
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

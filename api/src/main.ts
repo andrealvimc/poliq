@@ -14,9 +14,14 @@ async function bootstrap() {
   app.use(helmet());
   
   // CORS
+  const corsOrigin = configService.get('CORS_ORIGIN') || 
+    (process.env.NODE_ENV === 'production' ? false : true);
+  
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production' ? false : true,
+    origin: corsOrigin,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   });
 
   // Global validation

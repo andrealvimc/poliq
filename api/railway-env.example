@@ -1,0 +1,45 @@
+# Railway Environment Variables
+# Copy this file to .env and fill with your values
+
+# Database
+DATABASE_URL=postgresql://postgres:password@localhost:5432/poliq
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_EXPIRES_IN=7d
+
+# External APIs
+GNEWS_API_KEY=your-gnews-api-key
+GNEWS_BASE_URL=https://gnews.io/api/v4
+GNEWS_LANGUAGE=pt
+GNEWS_COUNTRY=br
+GNEWS_MAX=10
+
+# AI Configuration
+AI_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2:1b
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_MODEL=gpt-3.5-turbo
+
+# Meta/Facebook (Optional)
+META_ACCESS_TOKEN=your-meta-access-token
+META_APP_ID=your-meta-app-id
+META_APP_SECRET=your-meta-app-secret
+META_API_VERSION=v18.0
+
+# Scheduler
+NEWS_FETCH_INTERVAL=0 */30 * * * *
+CONTENT_GENERATION_INTERVAL=0 0 */2 * * *
+
+# Server
+PORT=3001
+NODE_ENV=production
+
+# CORS
+CORS_ORIGIN=https://your-frontend-url.vercel.app
