@@ -39,6 +39,39 @@ export class ContentProcessorService {
       .map(([word]) => word);
   }
 
+  async cleanContent(content: string): Promise<string> {
+    if (!content) return '';
+    
+    // Remove HTML tags
+    let cleaned = content.replace(/<[^>]*>/g, '');
+    
+    // Remove GNews sharing buttons at the beginning
+    cleaned = cleaned.replace(/^(Share\s*\n?Tweet\s*\n?Share\s*\n?Share\s*\n?E-mail\s*\n?)/gi, '');
+    cleaned = cleaned.replace(/^(Compartilhar\s*\n?Tweetar\s*\n?Compartilhar\s*\n?Compartilhar\s*\n?E-mail\s*\n?)/gi, '');
+    
+    // Remove individual sharing terms
+    cleaned = cleaned.replace(/\b(Share|Tweet|E-mail)\b/gi, '');
+    cleaned = cleaned.replace(/\b(Compartilhar|Tweetar|E-mail)\b/gi, '');
+    
+    // Remove common GNews truncation patterns
+    cleaned = cleaned.replace(/\.\.\.\s*\[\d+\s*chars\]/gi, '');
+    cleaned = cleaned.replace(/\.\.\.\s*\[truncated\]/gi, '');
+    cleaned = cleaned.replace(/\.\.\.\s*\[more\]/gi, '');
+    
+    // Remove multiple consecutive periods
+    cleaned = cleaned.replace(/\.{3,}/g, '...');
+    
+    // Normalize line breaks and whitespace
+    cleaned = cleaned.replace(/\n+/g, ' '); // Convert line breaks to spaces
+    cleaned = cleaned.replace(/\s+/g, ' '); // Normalize multiple spaces
+    cleaned = cleaned.trim();
+    
+    // Remove any remaining sharing patterns
+    cleaned = cleaned.replace(/^(Share|Tweet|E-mail|Compartilhar|Tweetar)\s*/gi, '');
+    
+    return cleaned.trim();
+  }
+
   async categorizeContent(title: string, content?: string): Promise<string[]> {
     const text = `${title} ${content || ''}`.toLowerCase();
     const categories: string[] = [];

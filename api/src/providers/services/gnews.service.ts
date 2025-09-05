@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 
 import { NewsProviderResult } from '../interfaces/news-provider.interface';
+import { ContentProcessorService } from '../../ai/services/content-processor.service';
 
 @Injectable()
 export class GnewsService {
@@ -22,6 +23,7 @@ export class GnewsService {
   constructor(
     private httpService: HttpService,
     private configService: ConfigService,
+    private contentProcessor: ContentProcessorService,
   ) {
     this.apiKey = this.configService.get('externalApis.gnews.apiKey');
     this.baseUrl = this.configService.get('externalApis.gnews.baseUrl');
@@ -81,17 +83,24 @@ export class GnewsService {
         return [];
       }
 
-      const articles = response.data.articles.map((article: any): NewsProviderResult => ({
-        title: article.title,
-        description: article.description,
-        content: article.content,
-        url: article.url,
-        source: article.source?.name || 'GNews',
-        publishedAt: new Date(article.publishedAt),
-        imageUrl: article.image,
-        author: article.source?.name,
-        tags: this.extractTags(article.title, article.description),
-      }));
+      const articles = await Promise.all(
+        response.data.articles.map(async (article: any): Promise<NewsProviderResult> => {
+          const cleanedContent = await this.contentProcessor.cleanContent(article.content || '');
+          const cleanedDescription = await this.contentProcessor.cleanContent(article.description || '');
+          
+          return {
+            title: article.title,
+            description: cleanedDescription,
+            content: cleanedContent,
+            url: article.url,
+            source: article.source?.name || 'GNews',
+            publishedAt: new Date(article.publishedAt),
+            imageUrl: article.image,
+            author: article.source?.name,
+            tags: this.extractTags(article.title, cleanedDescription),
+          };
+        })
+      );
 
       this.logger.log(`Successfully fetched ${articles.length} articles from GNews (total available: ${response.data.totalArticles || 'unknown'})`);
       return articles;

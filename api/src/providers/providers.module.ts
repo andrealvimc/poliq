@@ -6,13 +6,14 @@ import { ProvidersService } from './providers.service';
 import { GnewsService } from './services/gnews.service';
 import { ExternalSourceService } from './services/external-source.service';
 import { NewsSchedulerService } from '../scheduler/services/news-scheduler.service';
+import { ContentProcessorService } from '../ai/services/content-processor.service';
 import { NewsModule } from '../news/news.module';
 import { QueueModule } from '../queue/queue.module';
 
 @Module({
   imports: [HttpModule, NewsModule, QueueModule],
   controllers: [ProvidersController],
-  providers: [ProvidersService, GnewsService, ExternalSourceService, NewsSchedulerService],
+  providers: [ProvidersService, GnewsService, ExternalSourceService, NewsSchedulerService, ContentProcessorService],
   exports: [ProvidersService, GnewsService, ExternalSourceService],
 })
 export class ProvidersModule {}
