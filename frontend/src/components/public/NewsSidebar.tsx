@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
@@ -15,7 +16,11 @@ import {
   ArrowRight,
   Eye,
   MessageCircle,
-  Share2
+  Share2,
+  Search,
+  X,
+  Tag,
+  Clock
 } from 'lucide-react';
 import { News } from '@/types';
 import { usePopularNews } from '@/hooks/usePopularNews';
@@ -27,7 +32,28 @@ interface NewsSidebarProps {
 export const NewsSidebar: React.FC<NewsSidebarProps> = ({ 
   recentNews 
 }) => {
-  const { popularNews, loading: popularLoading } = usePopularNews(5);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { popularNews, loading: popularLoading } = usePopularNews(10);
+
+  // Filtrar notícias populares baseado na busca
+  const filteredPopularNews = popularNews.filter((item) => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      item.title.toLowerCase().includes(query) ||
+      (item.tags && item.tags.some(tag => tag.toLowerCase().includes(query))) ||
+      (item.summary && item.summary.toLowerCase().includes(query))
+    );
+  });
+
+  const handleSearch = () => {
+    // A busca é feita em tempo real através do filteredPopularNews
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+  };
   return (
     <div className="space-y-6">
       {/* Popular News */}
@@ -38,6 +64,8 @@ export const NewsSidebar: React.FC<NewsSidebarProps> = ({
             <span>Mais Lidas</span>
           </CardTitle>
         </CardHeader>
+        
+       
         <CardContent className="space-y-4">
           {popularLoading ? (
             Array.from({ length: 5 }).map((_, index) => (
@@ -81,6 +109,7 @@ export const NewsSidebar: React.FC<NewsSidebarProps> = ({
                         <span>{item.views?.toLocaleString() || 0}</span>
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
@@ -192,3 +221,4 @@ export const NewsSidebar: React.FC<NewsSidebarProps> = ({
     </div>
   );
 };
+

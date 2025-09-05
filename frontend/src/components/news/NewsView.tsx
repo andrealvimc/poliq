@@ -4,9 +4,10 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { MarkdownRenderer } from '@/components/ui/MarkdownRenderer';
+import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -20,16 +21,40 @@ import {
   Instagram,
   AlertTriangle,
   Eye,
+  Clock,
+  User,
+  Globe,
+  BookOpen,
+  TrendingUp,
+  MessageCircle,
+  Heart,
+  Bookmark,
+  MoreHorizontal,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { News, NewsStatus } from '@/types';
 import { apiClient } from '@/lib/api';
+import { usePopularNews } from '@/hooks/usePopularNews';
+import { NewsViewImproved } from './NewsViewImproved';
 
 interface NewsViewProps {
   news: News;
 }
 
 export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
+  return <NewsViewImproved news={news} />;
+};
+
+const NewsViewOld: React.FC<NewsViewProps> = ({ news }) => {
   const [views, setViews] = useState(news.views || 0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const { popularNews, loading: popularLoading } = usePopularNews(5);
 
   // Incrementar views quando o componente for montado
   useEffect(() => {
@@ -44,6 +69,41 @@ export const NewsView: React.FC<NewsViewProps> = ({ news }) => {
 
     incrementViews();
   }, [news.id]);
+
+  const handleShare = async (platform: string) => {
+    const url = window.location.href;
+    const title = news.title;
+    
+    switch (platform) {
+      case 'copy':
+        try {
+          await navigator.clipboard.writeText(url);
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        } catch (err) {
+          console.error('Erro ao copiar:', err);
+        }
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`, '_blank');
+        break;
+    }
+    setShowShareMenu(false);
+  };
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+  };
+
+  const handleBookmark = () => {
+    setIsBookmarked(!isBookmarked);
+  };
 
   const getStatusBadgeVariant = (status: NewsStatus) => {
     switch (status) {

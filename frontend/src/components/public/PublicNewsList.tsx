@@ -58,6 +58,19 @@ export const PublicNewsList: React.FC = () => {
     fetchNews();
   }, [currentPage, tagFilter, sortBy]);
 
+  // Debounce para busca automática
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim()) {
+        handleSearch();
+      } else if (searchQuery === '') {
+        fetchNews();
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
   const fetchNews = async () => {
     try {
       setLoading(true);
@@ -84,10 +97,26 @@ export const PublicNewsList: React.FC = () => {
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (searchQuery.trim()) {
-      // Implementar busca
-      console.log('Searching for:', searchQuery);
+      try {
+        setLoading(true);
+        const response = await apiClient.searchNews(searchQuery, {
+          page: 1,
+          limit: 12,
+        });
+        setNews(response.data);
+        setTotalPages(response.meta.totalPages);
+        setTotal(response.meta.total);
+        setCurrentPage(1);
+      } catch (error) {
+        console.error('Error searching news:', error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Se não há query, volta para as notícias publicadas
+      fetchNews();
     }
   };
 
@@ -171,20 +200,29 @@ export const PublicNewsList: React.FC = () => {
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 className="pl-12 h-12 bg-white/90 border-0 text-gray-900 placeholder-gray-500"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  ✕
+                </button>
+              )}
             </div>
             <Button 
               onClick={handleSearch}
-              className="h-12 px-8 bg-white text-blue-600 hover:bg-gray-100"
+              disabled={loading}
+              className="h-12 px-8 bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50"
             >
               <Search className="h-5 w-5 mr-2" />
-              Buscar
+              {loading ? 'Buscando...' : 'Buscar'}
             </Button>
           </div>
         </div>
       </div>
 
       {/* Featured News */}
-      {news.length > 0 && (
+      {/* {news.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <TrendingUp className="h-6 w-6 text-red-600" />
@@ -192,7 +230,7 @@ export const PublicNewsList: React.FC = () => {
           </div>
           <FeaturedNews news={news[0]} />
         </div>
-      )}
+      )} */}
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -246,6 +284,28 @@ export const PublicNewsList: React.FC = () => {
             </div>
           </div>
 
+          {/* Search Results Info */}
+          {searchQuery && news.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Search className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm text-blue-800">
+                    <strong>{total}</strong> resultado{total !== 1 ? 's' : ''} encontrado{total !== 1 ? 's' : ''} para <strong>"{searchQuery}"</strong>
+                  </span>
+                </div>
+                <Button 
+                  onClick={() => setSearchQuery('')}
+                  variant="ghost"
+                  size="sm"
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                >
+                  Limpar busca
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* News Grid/List */}
           {news.length === 0 ? (
             <Card>
@@ -254,8 +314,24 @@ export const PublicNewsList: React.FC = () => {
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
                     <Search className="h-8 w-8 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Nenhuma notícia encontrada</h3>
-                  <p className="text-gray-500">Tente ajustar os filtros ou buscar por outros termos</p>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {searchQuery ? 'Nenhuma notícia encontrada' : 'Nenhuma notícia disponível'}
+                  </h3>
+                  <p className="text-gray-500">
+                    {searchQuery 
+                      ? `Não encontramos resultados para "${searchQuery}". Tente outros termos ou limpe a busca.`
+                      : 'Tente ajustar os filtros ou buscar por outros termos'
+                    }
+                  </p>
+                  {searchQuery && (
+                    <Button 
+                      onClick={() => setSearchQuery('')}
+                      variant="outline"
+                      className="mt-4"
+                    >
+                      Limpar busca
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

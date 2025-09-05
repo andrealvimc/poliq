@@ -70,11 +70,11 @@ export class NewsController {
   @ApiQuery({ name: 'q', required: true, type: String })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  search(
-    @Query('q') query: string,
-    @Query() paginationDto: PaginationDto,
-  ) {
-    return this.newsService.search(query, paginationDto);
+  search(@Query() searchDto: SearchNewsDto) {
+    return this.newsService.search(searchDto.q, {
+      page: searchDto.page,
+      limit: searchDto.limit,
+    });
   }
 
   @Get('tag/:tag')
@@ -87,6 +87,14 @@ export class NewsController {
     @Query() paginationDto: PaginationDto,
   ) {
     return this.newsService.findByTag(tag, paginationDto);
+  }
+
+  @Get('popular')
+  @ApiOperation({ summary: 'Listar notícias mais visualizadas' })
+  @ApiResponse({ status: 200, description: 'Lista de notícias populares' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Número de notícias a retornar' })
+  getPopularNews(@Query('limit') limit?: number) {
+    return this.newsService.getPopularNews(limit);
   }
 
   @Get('slug/:slug')
@@ -124,14 +132,6 @@ export class NewsController {
   @ApiResponse({ status: 404, description: 'Notícia não encontrada' })
   incrementViews(@Param('id') id: string) {
     return this.newsService.incrementViews(id);
-  }
-
-  @Get('popular')
-  @ApiOperation({ summary: 'Listar notícias mais visualizadas' })
-  @ApiResponse({ status: 200, description: 'Lista de notícias populares' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Número de notícias a retornar' })
-  getPopularNews(@Query('limit') limit?: number) {
-    return this.newsService.getPopularNews(limit);
   }
 
   @Delete(':id')
