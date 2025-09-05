@@ -117,11 +117,20 @@ export class QueueService {
       this.getQueueStatistics(this.publicationQueue),
     ]);
 
-    return {
-      newsProcessing: newsStats,
-      mediaGeneration: mediaStats,
-      socialPublication: publicationStats,
-    };
+    return [
+      {
+        name: 'news-processing',
+        ...newsStats,
+      },
+      {
+        name: 'media-generation',
+        ...mediaStats,
+      },
+      {
+        name: 'social-publication',
+        ...publicationStats,
+      },
+    ];
   }
 
   private async getQueueStatistics(queue: Queue) {
@@ -139,6 +148,7 @@ export class QueueService {
       completed: completed.length,
       failed: failed.length,
       delayed: delayed.length,
+      paused: false, // Por enquanto sempre false, pode ser implementado depois
     };
   }
 

@@ -270,15 +270,15 @@ pnpm run start:dev
 
 ## 🎨 Screenshots
 
-### Dashboard Administrativo
+### Dashboard Administrativo (OLD)
 ![Dashboard Admin](media/admin-home.png)
 *Interface administrativa para gerenciar notícias, filas e configurações*
 
-### Página Principal
+### Página Principal (OLD)
 ![Home Page](media/home.png)
 *Página inicial com notícias processadas e categorizadas*
 
-### Visualização de Notícia
+### Visualização de Notícia (OLD)
 ![Notícia](media/noticia.png)
 *Página de detalhes da notícia com conteúdo gerado por IA*
 
