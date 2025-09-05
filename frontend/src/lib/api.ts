@@ -121,6 +121,16 @@ class ApiClient {
     return response.data;
   }
 
+  async getNewsByCategory(category: string, params?: SearchParams): Promise<PaginatedResponse<News>> {
+    const response: AxiosResponse<PaginatedResponse<News>> = await this.client.get(`/news/category/${category}`, { params });
+    return response.data;
+  }
+
+  async getCategoryStats(): Promise<{ category: string; count: number }[]> {
+    const response: AxiosResponse<{ category: string; count: number }[]> = await this.client.get('/news/categories/stats');
+    return response.data;
+  }
+
   // AI endpoints
   async processNewsContent(data: AIProcessRequest): Promise<AIProcessResponse> {
     const response: AxiosResponse<AIProcessResponse> = await this.client.post('/ai/process', data);

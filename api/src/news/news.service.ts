@@ -204,6 +204,31 @@ export class NewsService {
     return new PaginationResponseDto(news, total, page, limit);
   }
 
+  async findByCategory(category: string, paginationDto: PaginationDto): Promise<PaginationResponseDto<News>> {
+    const { page = 1, limit = 10 } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const [news, total] = await Promise.all([
+      this.database.news.findMany({
+        where: {
+          tags: { has: category },
+          status: NewsStatus.PUBLISHED,
+        },
+        skip,
+        take: limit,
+        orderBy: { publishedAt: 'desc' },
+      }),
+      this.database.news.count({
+        where: {
+          tags: { has: category },
+          status: NewsStatus.PUBLISHED,
+        },
+      }),
+    ]);
+
+    return new PaginationResponseDto(news, total, page, limit);
+  }
+
   async search(query: string, paginationDto: PaginationDto): Promise<PaginationResponseDto<News>> {
     const { page = 1, limit = 10 } = paginationDto;
     const skip = (page - 1) * limit;
@@ -270,5 +295,27 @@ export class NewsService {
     });
 
     return news;
+  }
+
+  async getCategoryStats(): Promise<{ category: string; count: number }[]> {
+    // Get all published news with their tags
+    const news = await this.database.news.findMany({
+      where: { status: NewsStatus.PUBLISHED },
+      select: { tags: true },
+    });
+
+    // Count occurrences of each category
+    const categoryCounts = new Map<string, number>();
+    
+    news.forEach(article => {
+      article.tags.forEach(tag => {
+        categoryCounts.set(tag, (categoryCounts.get(tag) || 0) + 1);
+      });
+    });
+
+    // Convert to array and sort by count
+    return Array.from(categoryCounts.entries())
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count);
   }
 }

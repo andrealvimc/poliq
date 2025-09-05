@@ -89,12 +89,31 @@ export class NewsController {
     return this.newsService.findByTag(tag, paginationDto);
   }
 
+  @Get('category/:category')
+  @ApiOperation({ summary: 'Listar notícias por categoria' })
+  @ApiResponse({ status: 200, description: 'Notícias da categoria especificada' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  findByCategory(
+    @Param('category') category: string,
+    @Query() paginationDto: PaginationDto,
+  ) {
+    return this.newsService.findByCategory(category, paginationDto);
+  }
+
   @Get('popular')
   @ApiOperation({ summary: 'Listar notícias mais visualizadas' })
   @ApiResponse({ status: 200, description: 'Lista de notícias populares' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Número de notícias a retornar' })
   getPopularNews(@Query('limit') limit?: number) {
     return this.newsService.getPopularNews(limit);
+  }
+
+  @Get('categories/stats')
+  @ApiOperation({ summary: 'Obter estatísticas de categorias' })
+  @ApiResponse({ status: 200, description: 'Contagem de notícias por categoria' })
+  getCategoryStats() {
+    return this.newsService.getCategoryStats();
   }
 
   @Get('slug/:slug')

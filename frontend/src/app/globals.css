@@ -118,5 +118,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    user-select: none;
   }
 }
+
+
