@@ -101,12 +101,12 @@ export const PublicHeader: React.FC = () => {
             </div>
             
             {/* Login Button */}
-            <Button variant="outline" asChild className="hidden sm:flex">
+            {/* <Button variant="outline" asChild className="hidden sm:flex">
               <Link href="/login">
                 <User className="mr-2 h-4 w-4" />
                 Login
               </Link>
-            </Button>
+            </Button> */}
 
             {/* Mobile Menu Button */}
             <Button
@@ -165,12 +165,12 @@ export const PublicHeader: React.FC = () => {
             </nav>
 
             <div className="pt-4 border-t">
-              <Button variant="outline" asChild className="w-full">
+              {/* <Button variant="outline" asChild className="w-full">
                 <Link href="/login">
                   <User className="mr-2 h-4 w-4" />
                   Login
                 </Link>
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
