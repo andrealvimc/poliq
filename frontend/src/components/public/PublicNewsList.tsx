@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +32,9 @@ import {
   Share2,
   Zap,
   Globe,
-  Shield
+  Shield,
+  X,
+  LoaderCircle
 } from 'lucide-react';
 import { useQueryState, parseAsString, parseAsInteger, parseAsStringEnum } from 'nuqs';
 import { apiClient } from '@/lib/api';
@@ -44,8 +46,11 @@ import { NewsSidebar } from './NewsSidebar';
 export const PublicNewsList: React.FC = () => {
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // URL State
   const [searchQuery, setSearchQuery] = useQueryState('q', parseAsString.withDefault(''));
@@ -54,26 +59,11 @@ export const PublicNewsList: React.FC = () => {
   const [viewMode, setViewMode] = useQueryState('view', parseAsStringEnum(['grid', 'list']).withDefault('grid'));
   const [sortBy, setSortBy] = useQueryState('sort', parseAsStringEnum(['recent', 'popular', 'trending']).withDefault('recent'));
 
-  useEffect(() => {
-    fetchNews();
-  }, [currentPage, tagFilter, sortBy]);
-
-  // Debounce para busca automática
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery.trim()) {
-        handleSearch();
-      } else if (searchQuery === '') {
-        fetchNews();
-      }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
-  const fetchNews = async () => {
+  const fetchNews = useCallback(async () => {
     try {
-      setLoading(true);
+      if (isInitialLoad) {
+        setLoading(true);
+      }
       const params: SearchParams = {
         page: currentPage,
         limit: 12,
@@ -94,13 +84,14 @@ export const PublicNewsList: React.FC = () => {
       console.error('Error fetching news:', error);
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
-  };
+  }, [currentPage, tagFilter, isInitialLoad]);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (searchQuery.trim()) {
       try {
-        setLoading(true);
+        setSearchLoading(true);
         const response = await apiClient.searchNews(searchQuery, {
           page: 1,
           limit: 12,
@@ -112,23 +103,49 @@ export const PublicNewsList: React.FC = () => {
       } catch (error) {
         console.error('Error searching news:', error);
       } finally {
-        setLoading(false);
+        setSearchLoading(false);
       }
     } else {
       // Se não há query, volta para as notícias publicadas
       fetchNews();
     }
-  };
+  }, [searchQuery, fetchNews]);
 
-  const getAvailableTags = () => {
+  // Efeito principal para buscar notícias
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      fetchNews();
+    }
+  }, [currentPage, tagFilter, sortBy, fetchNews]);
+
+  // Debounce para busca automática
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchLoading(false);
+      setIsTyping(false);
+      return;
+    }
+    
+    setIsTyping(true);
+    setSearchLoading(false);
+    
+    const timeoutId = setTimeout(() => {
+      setIsTyping(false);
+      handleSearch();
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, handleSearch]);
+
+  const getAvailableTags = useMemo(() => {
     const allTags = news.flatMap(item => item.tags || []);
     return Array.from(new Set(allTags)).slice(0, 10);
-  };
+  }, [news]);
 
   // Simular notícias recentes para sidebar
-  const recentNews = news.slice(0, 4);
+  const recentNews = useMemo(() => news.slice(0, 4), [news]);
 
-  if (loading) {
+  if (loading && isInitialLoad) {
     return (
       <div className="space-y-8">
         {/* Featured News Skeleton */}
@@ -174,48 +191,55 @@ export const PublicNewsList: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className={`space-y-8 transition-opacity duration-300 ${loading ? 'opacity-50' : 'opacity-100'}`}>
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-8 text-white">
-        <div className="max-w-4xl">
-          <div className="flex items-center space-x-2 mb-4">
-            <Zap className="h-6 w-6" />
-            <span className="text-lg font-semibold">Notícias Processadas com IA</span>
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 rounded-lg p-4 md:p-6 text-white relative overflow-hidden">
+        {/* Subtle overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+        
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="flex items-center space-x-2 mb-3">
+            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center">
+              <Zap className="h-3 w-3" />
+            </div>
+            <span className="text-sm font-medium text-blue-100">Notícias Processadas com IA</span>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+          
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
             Fique por dentro das principais notícias
           </h1>
-          <p className="text-xl text-blue-100 mb-6">
-            Análise inteligente e perspectiva editorial de direita sobre os acontecimentos mais importantes
+          
+          <p className="text-sm md:text-base text-blue-100 mb-6 max-w-2xl leading-relaxed">
+            Análise inteligente e perspectiva editorial sobre os acontecimentos mais importantes
           </p>
           
           {/* Search Bar */}
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-2 max-w-2xl">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none z-10 transition-all duration-200 ${isTyping || searchLoading ? 'animate-pulse' : ''}`} />
               <Input
                 placeholder="Buscar notícias, temas, palavras-chave..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-12 h-12 bg-white/90 border-0 text-gray-900 placeholder-gray-500"
+                className={`pl-10 h-10 bg-white/95 border-0 text-gray-900 placeholder-gray-500 rounded focus:ring-0 focus:outline-none relative z-0 transition-all duration-200 ${isTyping || searchLoading ? 'opacity-90' : 'opacity-100'}`}
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors z-20 cursor-pointer"
                 >
-                  ✕
+                  <X className="h-4 w-4" />
                 </button>
               )}
             </div>
             <Button 
               onClick={handleSearch}
-              disabled={loading}
-              className="h-12 px-8 bg-white text-blue-600 hover:bg-gray-100 disabled:opacity-50"
+              disabled={searchLoading || isTyping}
+              className={`h-10 px-4 bg-white text-blue-600 hover:bg-gray-50 disabled:opacity-50 rounded font-medium transition-all duration-200 cursor-pointer focus:outline-none ${isTyping ? '' : ''}`}
             >
-              <Search className="h-5 w-5 mr-2" />
-              {loading ? 'Buscando...' : 'Buscar'}
+              <Search className="h-4 w-4 mr-2" />
+              {searchLoading ? <LoaderCircle className="h-4 w-4 mr-2 animate-spin" /> : isTyping ?   'Buscar' : 'Buscar'}
             </Button>
           </div>
         </div>
@@ -246,7 +270,7 @@ export const PublicNewsList: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as categorias</SelectItem>
-                  {getAvailableTags().map((tag) => (
+                  {getAvailableTags.map((tag) => (
                     <SelectItem key={tag} value={tag}>
                       {tag}
                     </SelectItem>
