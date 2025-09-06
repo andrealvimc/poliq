@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PublicLayout } from '@/components/layout/PublicLayout';
 import { ArrowLeft, Calendar, Eye, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -97,55 +98,56 @@ export default function CategoryPage() {
 
   if (loading && !news) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-8">
-            <Skeleton className="h-8 w-64 mb-4" />
-            <Skeleton className="h-4 w-96" />
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i}>
-                <CardHeader>
-                  <Skeleton className="h-48 w-full" />
-                  <Skeleton className="h-6 w-3/4" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-2/3" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <PublicLayout>
+        <div className="mb-8">
+          <Skeleton className="h-8 w-64 mb-4" />
+          <Skeleton className="h-4 w-96" />
         </div>
-      </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-6 w-3/4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </PublicLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Erro</h2>
-            <p className="text-gray-600 mb-6">{error}</p>
-            <Button asChild>
-              <Link href="/categorias">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar às Categorias
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <PublicLayout>
+        <div className="flex items-center justify-center min-h-96">
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6 text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Erro</h2>
+              <p className="text-gray-600 mb-6">{error}</p>
+              <Button asChild>
+                <Link href="/categorias">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Voltar às Categorias
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PublicLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
+    <PublicLayout>
+      <div className="px-4 py-8">
+        {/* Header */}
+        <div className="bg-white border-b rounded-lg mb-8">
+          <div className="px-6 py-8">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-4">
@@ -271,7 +273,8 @@ export default function CategoryPage() {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
-    </div>
+    </PublicLayout>
   );
 }

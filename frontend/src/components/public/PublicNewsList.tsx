@@ -191,7 +191,8 @@ export const PublicNewsList: React.FC = () => {
   }
 
   return (
-    <div className={`space-y-8 transition-opacity duration-300 ${loading ? 'opacity-50' : 'opacity-100'}`}>
+    <>
+      <div className={`space-y-8 transition-opacity duration-300 ${loading ? 'opacity-50' : 'opacity-100'}`}>
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 rounded-lg p-4 md:p-6 text-white relative overflow-hidden">
         {/* Subtle overlay for depth */}
@@ -411,43 +412,46 @@ export const PublicNewsList: React.FC = () => {
           <NewsSidebar recentNews={recentNews} />
         </div>
       </div>
+      </div>
 
-      {/* AI Processing Info */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-        <CardContent className="p-6">
-          <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Conteúdo Processado por Inteligência Artificial
-              </h3>
-              <p className="text-gray-700 mb-4">
-                Nossas notícias são processadas e analisadas por IA com perspectiva editorial de direita, 
-                mantendo os fatos principais mas apresentando uma análise crítica e conservadora. 
-                Para informações completas e atualizadas, sempre consulte a fonte original de cada artigo.
-              </p>
-              <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <div className="flex items-center space-x-2">
-                  <Zap className="h-4 w-4 text-yellow-500" />
-                  <span>Processamento em tempo real</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Globe className="h-4 w-4 text-blue-500" />
-                  <span>Fontes confiáveis</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                  <span>Análise inteligente</span>
+      {/* AI Processing Info - Full Width */}
+      <div className="w-full -mx-4 mt-8">
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 rounded-none">
+          <CardContent className="p-6">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                  <Shield className="h-6 w-6 text-white" />
                 </div>
               </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Conteúdo Processado por Inteligência Artificial
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  Nossas notícias são processadas e analisadas por IA com perspectiva editorial de direita, 
+                  mantendo os fatos principais mas apresentando uma análise crítica e conservadora. 
+                  Para informações completas e atualizadas, sempre consulte a fonte original de cada artigo.
+                </p>
+                <div className="flex items-center space-x-6 text-sm text-gray-600">
+                  <div className="flex items-center space-x-2">
+                    <Zap className="h-4 w-4 text-yellow-500" />
+                    <span>Processamento em tempo real</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Globe className="h-4 w-4 text-blue-500" />
+                    <span>Fontes confiáveis</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-4 w-4 text-green-500" />
+                    <span>Análise inteligente</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 };

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PublicLayout } from '@/components/layout/PublicLayout';
 import {
   Globe,
   TrendingUp,
@@ -172,70 +173,71 @@ export default function CategoriasPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b">
-          <div className="container mx-auto px-4 py-8">
+      <PublicLayout>
+        <div className="bg-white border-b rounded-lg mb-8">
+          <div className="px-6 py-8">
             <div className="text-center">
               <Skeleton className="h-10 w-80 mx-auto mb-4" />
               <Skeleton className="h-6 w-96 mx-auto" />
             </div>
           </div>
         </div>
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i}>
-                <CardHeader>
-                  <Skeleton className="h-16 w-full" />
-                  <Skeleton className="h-6 w-3/4" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-2/3 mb-4" />
-                  <Skeleton className="h-10 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-6 w-3/4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3 mb-4" />
+                <Skeleton className="h-10 w-full" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </div>
+      </PublicLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Erro</h2>
-            <p className="text-gray-600 mb-6">{error}</p>
-            <Button onClick={() => window.location.reload()}>
-              Tentar Novamente
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <PublicLayout>
+        <div className="flex items-center justify-center min-h-96">
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6 text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Erro</h2>
+              <p className="text-gray-600 mb-6">{error}</p>
+              <Button onClick={() => window.location.reload()}>
+                Tentar Novamente
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </PublicLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Categorias de Notícias
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Explore notícias organizadas por temas e encontre exatamente 
-              o que você está procurando.
-            </p>
+    <PublicLayout>
+      <div className="px-4 py-8">
+        {/* Header */}
+        <div className="bg-white border-b rounded-lg mb-8">
+          <div className="px-6 py-8">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                Categorias de Notícias
+              </h1>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Explore notícias organizadas por temas e encontre exatamente 
+                o que você está procurando.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto px-4 py-12">
+        <div>
         {categories.length > 0 ? (
           <>
             {/* Categories Grid */}
@@ -309,7 +311,8 @@ export default function CategoriasPage() {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
-    </div>
+    </PublicLayout>
   );
 }
