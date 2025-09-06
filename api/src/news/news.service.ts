@@ -10,6 +10,10 @@ import { SearchNewsDto } from './dto/search-news.dto';
 
 @Injectable()
 export class NewsService {
+  // Cache simples para evitar views duplicadas (em produção, usar Redis)
+  private viewCache = new Map<string, { timestamp: number; ip?: string }>();
+  private readonly VIEW_CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
   constructor(
     private database: DatabaseService,
     private slugService: SlugService,
@@ -262,7 +266,7 @@ export class NewsService {
     return new PaginationResponseDto(news, total, page, limit);
   }
 
-  async incrementViews(id: string): Promise<{ views: number }> {
+  async incrementViews(id: string, clientIp?: string): Promise<{ views: number }> {
     const news = await this.database.news.findUnique({
       where: { id },
     });
@@ -271,6 +275,21 @@ export class NewsService {
       throw new NotFoundException('Notícia não encontrada');
     }
 
+    // Criar chave única para a visualização (newsId + IP ou apenas newsId)
+    const cacheKey = clientIp ? `${id}-${clientIp}` : id;
+    const now = Date.now();
+
+    // Verificar se já foi visualizada recentemente
+    const cachedView = this.viewCache.get(cacheKey);
+    if (cachedView && (now - cachedView.timestamp) < this.VIEW_CACHE_DURATION) {
+      // Retornar views atuais sem incrementar
+      return { views: news.views };
+    }
+
+    // Limpar cache antigo (opcional, para evitar vazamento de memória)
+    this.cleanupExpiredCache(now);
+
+    // Incrementar views no banco
     const updatedNews = await this.database.news.update({
       where: { id },
       data: {
@@ -280,7 +299,21 @@ export class NewsService {
       },
     });
 
+    // Armazenar no cache
+    this.viewCache.set(cacheKey, {
+      timestamp: now,
+      ip: clientIp,
+    });
+
     return { views: updatedNews.views };
+  }
+
+  private cleanupExpiredCache(now: number): void {
+    for (const [key, value] of this.viewCache.entries()) {
+      if (now - value.timestamp > this.VIEW_CACHE_DURATION) {
+        this.viewCache.delete(key);
+      }
+    }
   }
 
   async getPopularNews(limit: number = 10): Promise<News[]> {

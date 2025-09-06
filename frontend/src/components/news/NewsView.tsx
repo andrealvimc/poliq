@@ -56,14 +56,20 @@ const NewsViewOld: React.FC<NewsViewProps> = ({ news }) => {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const { popularNews, loading: popularLoading } = usePopularNews(5);
 
-  // Incrementar views quando o componente for montado
+  // Incrementar views quando o componente for montado (apenas uma vez)
   useEffect(() => {
+    let hasIncremented = false;
+    
     const incrementViews = async () => {
+      if (hasIncremented) return;
+      hasIncremented = true;
+      
       try {
         const response = await apiClient.incrementNewsViews(news.id);
         setViews(response.views);
       } catch (error) {
         console.error('Erro ao incrementar views:', error);
+        hasIncremented = false; // Reset em caso de erro para tentar novamente
       }
     };
 

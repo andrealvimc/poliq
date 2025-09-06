@@ -38,6 +38,7 @@ import {
 import { News, NewsStatus } from '@/types';
 import { apiClient } from '@/lib/api';
 import { usePopularNews } from '@/hooks/usePopularNews';
+import { useNewsViews } from '@/hooks/useNewsViews';
 
 interface NewsViewProps {
   news: News;
@@ -51,19 +52,12 @@ export const NewsViewImproved: React.FC<NewsViewProps> = ({ news }) => {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const { popularNews, loading: popularLoading } = usePopularNews(5);
 
-  // Incrementar views quando o componente for montado
-  useEffect(() => {
-    const incrementViews = async () => {
-      try {
-        const response = await apiClient.incrementNewsViews(news.id);
-        setViews(response.views);
-      } catch (error) {
-        console.error('Erro ao incrementar views:', error);
-      }
-    };
-
-    incrementViews();
-  }, [news.id]);
+  // Usar hook personalizado para gerenciar views
+  useNewsViews({
+    newsId: news.id,
+    initialViews: news.views || 0,
+    onViewsUpdate: setViews,
+  });
 
   const handleShare = async (platform: string) => {
     const url = window.location.href;

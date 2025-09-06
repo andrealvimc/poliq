@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -149,8 +150,12 @@ export class NewsController {
   @ApiOperation({ summary: 'Incrementar visualizações da notícia' })
   @ApiResponse({ status: 200, description: 'Visualizações incrementadas com sucesso' })
   @ApiResponse({ status: 404, description: 'Notícia não encontrada' })
-  incrementViews(@Param('id') id: string) {
-    return this.newsService.incrementViews(id);
+  incrementViews(
+    @Param('id') id: string,
+    @Req() req: any,
+  ) {
+    const clientIp = req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress;
+    return this.newsService.incrementViews(id, clientIp);
   }
 
   @Delete(':id')

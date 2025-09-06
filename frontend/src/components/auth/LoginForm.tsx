@@ -125,9 +125,9 @@ export const LoginForm: React.FC = () => {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-600">
-            <p>Credenciais padrão para teste:</p>
+            <p>Não estamos aceitando novos usuários no momento.</p>
             <p className="font-mono text-xs mt-1">
-              admin@poliq.com / admin123
+              Aguarde o nosso sistema de cadastro ser liberado novamente.
             </p>
           </div>
         </CardContent>
